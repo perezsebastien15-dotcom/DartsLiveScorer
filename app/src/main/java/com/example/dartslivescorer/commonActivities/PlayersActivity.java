@@ -27,29 +27,19 @@ import models.gamesModels.PlayerItem;
 
 public class PlayersActivity extends AppCompatActivity implements GetJoueursAsyncTask.OnJoueursLoadedListener {
 
-    private Button retour;
-    private Button ajouter;
     private DartScorerDatabase db;
     private GridView gridView;
     private WindowInsetsControllerCompat windowInsetsController;
-
-
     private MusicService musicService;
     private boolean isMusicBound = false;
 
-    private ServiceConnection musicConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            MusicService.LocalBinder binder = (MusicService.LocalBinder) service;
-            musicService = binder.getService();
+    private final ServiceConnection musicConnection = new ServiceConnection() {
+        @Override public void onServiceConnected(ComponentName name, IBinder service) {
+            musicService = ((MusicService.LocalBinder) service).getService();
             musicService.startMusic();
             isMusicBound = true;
         }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            isMusicBound = false;
-        }
+        @Override public void onServiceDisconnected(ComponentName name) { isMusicBound = false; }
     };
 
     @Override
@@ -57,90 +47,58 @@ public class PlayersActivity extends AppCompatActivity implements GetJoueursAsyn
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_players_list);
 
-        // Liez votre activité au service de musique
         String musicServiceId = getIntent().getStringExtra("MusicServiceId");
+        if (musicServiceId != null)
+            bindService(new Intent(this, MusicService.class), musicConnection, Context.BIND_AUTO_CREATE);
 
-        if (musicServiceId != null) {
-            Intent serviceIntent = new Intent(this, MusicService.class);
-            bindService(serviceIntent, musicConnection, Context.BIND_AUTO_CREATE);
-        }
-
-        // Initialize the WindowInsetsControllerCompat
         windowInsetsController = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-
-        // Hide the system bars
         windowInsetsController.hide(WindowInsetsCompat.Type.systemBars());
 
-        // Récupération de l'instance db
         db = DartScorerDatabase.getDatabase(this);
-
-        // Récupération de la liste des joueurs en bdd
         new GetJoueursAsyncTask(this, db).execute();
 
-        // Retour à l'accueil
-        retour = findViewById(R.id.jeuretour);
-        retour.setOnClickListener(v -> {
-            Intent intent = new Intent(getApplicationContext(), IntroGameActivity.class);
-            intent.putExtra("MusicServiceId", "uniqueMusicServiceId");
-            startActivity(intent);
-            finish();
-        });
-
-        // Création d'un joueur
-        ajouter = findViewById(R.id.ajouter_joueur);
-        ajouter.setOnClickListener(v -> {
-            Intent intent = new Intent(getApplicationContext(), AddPlayerActivity.class);
-            intent.putExtra("MusicServiceId", "uniqueMusicServiceId");
-            startActivity(intent);
-            finish();
-        });
-
         gridView = findViewById(R.id.player_grid_view);
+
+        Button retour = findViewById(R.id.jeuretour);
+        retour.setOnClickListener(v -> {
+            startActivity(new Intent(getApplicationContext(), IntroGameActivity.class)
+                    .putExtra("MusicServiceId", "uniqueMusicServiceId"));
+            finish();
+        });
+
+        Button ajouter = findViewById(R.id.ajouter_joueur);
+        ajouter.setOnClickListener(v -> {
+            startActivity(new Intent(getApplicationContext(), AddPlayerActivity.class)
+                    .putExtra("MusicServiceId", "uniqueMusicServiceId"));
+            finish();
+        });
     }
 
-    public void populateGridView(List<PlayerItem> joueurs, String type) {
+    private void populateGridView(List<PlayerItem> joueurs) {
         gridView = findViewById(R.id.player_grid_view);
-        PlayerItemAdapter playerAdapter = new PlayerItemAdapter(this, joueurs,
-                (playerItem, clickType) -> {
-                    // Gérer le clic long sur le joueur
-                    System.out.println("item : " + playerItem.getId());
-                    handlePlayerItemClick(playerItem, clickType);
-                },
-                playerItem -> {
-                    // Gérer le clic sur le joueur (stats dans votre cas)
-                    /*Intent intent = new Intent(getApplicationContext(), StatsActivity.class);
-                    startActivity(intent);
-                    finish();*/
-                }
-        );
-        gridView.setAdapter(playerAdapter);
+        gridView.setAdapter(new PlayerItemAdapter(this, joueurs,
+                (playerItem, clickType) -> handlePlayerItemClick(playerItem, clickType),
+                playerItem -> { /* Stats : non implémenté */ }
+        ));
     }
 
     private void handlePlayerItemClick(PlayerItem playerItem, String type) {
-        System.out.println("type : " + type);
-        if (type.equals("Suppr")) {
-            // Supprimer le joueur de la base de données
+        if ("Suppr".equals(type)) {
             new DeleteJoueurAsyncTask(this, db, playerItem.getId()).execute();
-
-            Intent intent = new Intent(getApplicationContext(), PlayersActivity.class);
-            intent.putExtra("MusicServiceId", "uniqueMusicServiceId");
-            startActivity(intent);
+            startActivity(new Intent(getApplicationContext(), PlayersActivity.class)
+                    .putExtra("MusicServiceId", "uniqueMusicServiceId"));
             finish();
-        }
-        if (type.equals("Modif")) {
-            Intent intent = new Intent(getApplicationContext(), ModifyPlayerActivity.class);
-
-            intent.putExtra("playerId", playerItem.getId());
-            intent.putExtra("playerName", playerItem.getName());
-            intent.putExtra("MusicServiceId", "uniqueMusicServiceId");
-
-            startActivity(intent);
+        } else if ("Modif".equals(type)) {
+            startActivity(new Intent(getApplicationContext(), ModifyPlayerActivity.class)
+                    .putExtra("playerId", playerItem.getId())
+                    .putExtra("playerName", playerItem.getName())
+                    .putExtra("MusicServiceId", "uniqueMusicServiceId"));
             finish();
         }
     }
 
     @Override
     public void onJoueursLoaded(List<PlayerItem> joueurs) {
-        populateGridView(joueurs, "");
+        populateGridView(joueurs);
     }
 }

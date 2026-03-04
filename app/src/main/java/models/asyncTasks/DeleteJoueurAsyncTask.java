@@ -1,27 +1,27 @@
 package models.asyncTasks;
 
 import android.content.Context;
-import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import models.DartScorerDatabase;
 
-public class DeleteJoueurAsyncTask extends AsyncTask<Void, Void, Void> {
+public class DeleteJoueurAsyncTask {
 
-    private DartScorerDatabase db;
-    private Context context;
+    private final DartScorerDatabase db;
+    private final Long idJoueur;
 
-    private Long idJoueur;
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    // Constructeur prenant le contexte pour afficher un message Toast
     public DeleteJoueurAsyncTask(Context context, DartScorerDatabase database, Long idJoueur) {
-        this.context = context;
         this.db = database;
         this.idJoueur = idJoueur;
     }
 
-    @Override
-    protected Void doInBackground(Void... voids) {
-        db.dartScorerDao().deleteJoueurById(idJoueur);
-        return null;
+    public void execute() {
+        executor.execute(() -> db.dartScorerDao().deleteJoueurById(idJoueur));
     }
 }

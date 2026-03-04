@@ -1,62 +1,58 @@
 package models.asyncTasks;
 
-import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
-import com.example.dartslivescorer.commonActivities.ModifyPlayerActivity;
-
 import java.lang.ref.WeakReference;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import com.example.dartslivescorer.commonActivities.ModifyPlayerActivity;
 
 import models.DartScorerDatabase;
 import models.commonModels.Joueur;
 import models.gamesModels.PlayerItem;
 
-public class GetJoueurAsyncTask extends AsyncTask<Long, Void, PlayerItem> {
+public class GetJoueurAsyncTask {
 
-    private DartScorerDatabase db;
-    private WeakReference<ModifyPlayerActivity> modifyPlayerActivity;
-    private OnJoueurLoadedListener listener;
+    private final DartScorerDatabase db;
+    private final WeakReference<ModifyPlayerActivity> activityRef;
+    private final OnJoueurLoadedListener listener;
+
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private static final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     public interface OnJoueurLoadedListener {
         void onJoueurLoaded(PlayerItem joueur);
     }
 
-    public GetJoueurAsyncTask(ModifyPlayerActivity modifyPlayerActivity, DartScorerDatabase database, OnJoueurLoadedListener listener) {
-        this.modifyPlayerActivity = new WeakReference<>(modifyPlayerActivity);
+    public GetJoueurAsyncTask(ModifyPlayerActivity activity, DartScorerDatabase database, OnJoueurLoadedListener listener) {
+        this.activityRef = new WeakReference<>(activity);
         this.db = database;
         this.listener = listener;
     }
 
-    @Override
-    protected PlayerItem doInBackground(Long... playerIds) {
-        if (playerIds.length > 0 && playerIds[0] != null) {
-            long playerId = playerIds[0];
-            // Charger le joueur depuis la base de données en utilisant l'ID
-            Joueur joueur = db.dartScorerDao().getJoueurById(playerId);
-
-            // Vérifier si le joueur est null avant de créer PlayerItem
-            if (joueur != null) {
-
-                // Transformer l'entité Joueur en objet PlayerItem
-                PlayerItem playerItem = new PlayerItem(joueur.id, joueur.nom, 0);
-                return playerItem;
+    public void execute(Long playerId) {
+        executor.execute(() -> {
+            PlayerItem result = null;
+            if (playerId != null) {
+                Joueur joueur = db.dartScorerDao().getJoueurById(playerId);
+                if (joueur != null)
+                    result = new PlayerItem(joueur.id, joueur.nom, 0);
             }
-        }
-        return null;
-    }
-
-    @Override
-    protected void onPostExecute(PlayerItem joueur) {
-        ModifyPlayerActivity activity = modifyPlayerActivity.get();
-        if (activity != null) {
-            if (joueur != null) {
-                // Notifier l'activité du joueur chargé
-                listener.onJoueurLoaded(joueur);
-            } else {
-                Log.e("GetJoueurAsyncTask", "Aucun joueur chargé");
-            }
-        } else {
-            Log.e("GetJoueurAsyncTask", "Activité de modification de joueur n'est plus disponible");
-        }
+            final PlayerItem finalResult = result;
+            mainHandler.post(() -> {
+                ModifyPlayerActivity activity = activityRef.get();
+                if (activity != null) {
+                    if (finalResult != null)
+                        listener.onJoueurLoaded(finalResult);
+                    else
+                        Log.e("GetJoueurAsyncTask", "Aucun joueur chargé");
+                } else {
+                    Log.e("GetJoueurAsyncTask", "Activité n'est plus disponible");
+                }
+            });
+        });
     }
 }

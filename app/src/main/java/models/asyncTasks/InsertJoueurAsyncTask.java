@@ -1,39 +1,38 @@
 package models.asyncTasks;
 
 import android.content.Context;
-import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.Toast;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import models.DartScorerDatabase;
 import models.commonModels.Joueur;
 
-public class InsertJoueurAsyncTask extends AsyncTask<Joueur, Void, Long> {
+public class InsertJoueurAsyncTask {
 
-    private DartScorerDatabase db;
-    private Context context;
+    private final DartScorerDatabase db;
+    private final Context context;
 
-    // Constructeur prenant le contexte pour afficher un message Toast
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private static final Handler mainHandler = new Handler(Looper.getMainLooper());
+
     public InsertJoueurAsyncTask(Context context, DartScorerDatabase database) {
         this.context = context;
         this.db = database;
     }
 
-    // Méthode exécutée en arrière-plan
-    @Override
-    protected Long doInBackground(Joueur... joueurs) {
-        // Insérer le joueur dans la base de données et renvoyer l'ID inséré
-        return db.dartScorerDao().insertJoueur(joueurs[0]);
-    }
-
-    // Méthode exécutée après l'exécution en arrière-plan
-    @Override
-    protected void onPostExecute(Long joueurId) {
-        if (joueurId > 0) {
-            // L'insertion a réussi, afficher un message Toast par exemple
-            Toast.makeText(context, "Joueur inséré avec succès", Toast.LENGTH_SHORT).show();
-        } else {
-            // Gérer le cas où l'insertion a échoué
-            Toast.makeText(context, "Échec de l'insertion du joueur", Toast.LENGTH_SHORT).show();
-        }
+    public void execute(Joueur joueur) {
+        executor.execute(() -> {
+            long joueurId = db.dartScorerDao().insertJoueur(joueur);
+            mainHandler.post(() -> {
+                if (joueurId > 0)
+                    Toast.makeText(context, "Joueur inséré avec succès", Toast.LENGTH_SHORT).show();
+                else
+                    Toast.makeText(context, "Échec de l'insertion du joueur", Toast.LENGTH_SHORT).show();
+            });
+        });
     }
 }

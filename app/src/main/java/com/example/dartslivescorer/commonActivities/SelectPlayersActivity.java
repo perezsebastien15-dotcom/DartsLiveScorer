@@ -7,7 +7,6 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Vibrator;
-import android.view.View;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.Toast;
@@ -35,39 +34,26 @@ import models.commonModels.GameItem;
 import models.commonModels.MusicService;
 import models.gamesModels.PlayerItem;
 
-// Import des classes nécessaires
-// ...
-
 public class SelectPlayersActivity extends AppCompatActivity implements GetJoueursAsyncTask.OnJoueursLoadedListener {
 
     private List<PlayerItem> allPlayers;
     private List<PlayerItem> selectedPlayers;
     private List<PlayerItem> displayedPlayers;
-    private Button retour;
-    private Button lancer;
     private DartScorerDatabase db;
     private GridView gridView;
     private PlayerItemAdapter playerAdapter;
     private WindowInsetsControllerCompat windowInsetsController;
-
     private Vibrator vibrator;
-
     private MusicService musicService;
     private boolean isMusicBound = false;
 
-    private ServiceConnection musicConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            MusicService.LocalBinder binder = (MusicService.LocalBinder) service;
-            musicService = binder.getService();
+    private final ServiceConnection musicConnection = new ServiceConnection() {
+        @Override public void onServiceConnected(ComponentName name, IBinder service) {
+            musicService = ((MusicService.LocalBinder) service).getService();
             musicService.startMusic();
             isMusicBound = true;
         }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            isMusicBound = false;
-        }
+        @Override public void onServiceDisconnected(ComponentName name) { isMusicBound = false; }
     };
 
     @Override
@@ -75,151 +61,92 @@ public class SelectPlayersActivity extends AppCompatActivity implements GetJoueu
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_players_selection);
 
-        // Liez votre activité au service de musique
         String musicServiceId = getIntent().getStringExtra("MusicServiceId");
-
-        if (musicServiceId != null) {
-            Intent serviceIntent = new Intent(this, MusicService.class);
-            bindService(serviceIntent, musicConnection, Context.BIND_AUTO_CREATE);
-        }
+        if (musicServiceId != null)
+            bindService(new Intent(this, MusicService.class), musicConnection, Context.BIND_AUTO_CREATE);
 
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        // Initialize the WindowInsetsControllerCompat
         windowInsetsController = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-
-        // Hide the system bars
         windowInsetsController.hide(WindowInsetsCompat.Type.systemBars());
 
-        // Récupérer le jeu choisi depuis l'intent
         GameItem selectedGameItem = getIntent().getParcelableExtra("selectedGame");
-
         db = DartScorerDatabase.getDatabase(this);
 
-        retour = findViewById(R.id.jeuretour);
-        retour.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                vibrate();
-                Intent intent = new Intent(getApplicationContext(), GamesListActivity.class);
-                intent.putExtra("MusicServiceId", "uniqueMusicServiceId");
-                startActivity(intent);
-                finish();
-            }
+        Button retour = findViewById(R.id.jeuretour);
+        retour.setOnClickListener(v -> {
+            vibrate();
+            startActivity(new Intent(getApplicationContext(), GamesListActivity.class)
+                    .putExtra("MusicServiceId", "uniqueMusicServiceId"));
+            finish();
         });
 
-        lancer = findViewById(R.id.plateau_jeu);
-        lancer.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                vibrate();
-                if (isMusicBound) {
-                    unbindService(musicConnection);
-                    isMusicBound = false;
-                }
-
-                if(selectedGameItem.getType().equals(eGames.Standard301)
-                        || selectedGameItem.getType().equals(eGames.Standard501)
-                        || selectedGameItem.getType().equals(eGames.Standard701)) {
-                    if(selectedPlayers.size()>0) {
-                        Intent intent = new Intent(SelectPlayersActivity.this, StandardGameActivity.class);
-                        intent.putExtra("selectedGame", selectedGameItem);
-                        intent.putExtra("selectedPlayers", new ArrayList<>(selectedPlayers));
-                        startActivity(intent);
-                    }
-                    else
-                        Toast.makeText(SelectPlayersActivity.this, "Sélectionnez au moins un joueur", Toast.LENGTH_SHORT).show();
-
-                }
-                if(selectedGameItem.getType().equals(eGames.OriginalCricket)
-                        || selectedGameItem.getType().equals(eGames.HiddenCricket)
-                        || selectedGameItem.getType().equals(eGames.RandomCricket)) {
-                    if(selectedPlayers.size()>1) {
-                        Intent intent = new Intent(SelectPlayersActivity.this, CricketGameActivity.class);
-                        intent.putExtra("selectedGame", selectedGameItem);
-                        intent.putExtra("selectedPlayers", new ArrayList<>(selectedPlayers));
-                        startActivity(intent);
-                    }
-                    else
-                        Toast.makeText(SelectPlayersActivity.this, "Sélectionnez au moins deux joueurs", Toast.LENGTH_SHORT).show();
-
-                }
-                if(selectedGameItem.getType().equals(eGames.UnderTheHat)) {
-                    if(selectedPlayers.size()>1 && selectedPlayers.size()<10) {
-                        Intent intent = new Intent(SelectPlayersActivity.this, UnderHatActivity.class);
-                        intent.putExtra("selectedGame", selectedGameItem);
-                        intent.putExtra("selectedPlayers", new ArrayList<>(selectedPlayers));
-                        startActivity(intent);
-                    }
-                    else if(selectedPlayers.size()<1)
-                        Toast.makeText(SelectPlayersActivity.this, "Sélectionnez au moins deux joueurs", Toast.LENGTH_SHORT).show();
-                    else if(selectedPlayers.size()>9)
-                        Toast.makeText(SelectPlayersActivity.this, "Sélectionnez moins de dix joueurs", Toast.LENGTH_SHORT).show();
-
-                }
-                if(selectedGameItem.getType().equals(eGames.ShootOut)) {
-                    if(selectedPlayers.size()>1) {
-                        // Arrêtez la musique et libérez les ressources lorsque l'activité est détruite
-                        if (isMusicBound) {
-                            musicService.stopMusic();
-                            unbindService(musicConnection);
-                            isMusicBound = false;
-                        }
-                        Intent intent = new Intent(SelectPlayersActivity.this, ShootOutActivity.class);
-                        intent.putExtra("selectedGame", selectedGameItem);
-                        intent.putExtra("selectedPlayers", new ArrayList<>(selectedPlayers));
-                        startActivity(intent);
-                    }
-                    else
-                        Toast.makeText(SelectPlayersActivity.this, "Sélectionnez au moins un joueur", Toast.LENGTH_SHORT).show();
-
-                }
-                if(selectedGameItem.getType().equals(eGames.MasterMind)) {
-                    if(selectedPlayers.size()==1) {
-                        // Arrêtez la musique et libérez les ressources lorsque l'activité est détruite
-                        if (isMusicBound) {
-                            musicService.stopMusic();
-                            unbindService(musicConnection);
-                            isMusicBound = false;
-                        }
-                        Intent intent = new Intent(SelectPlayersActivity.this, MasterMindActivity.class);
-                        intent.putExtra("selectedGame", selectedGameItem);
-                        intent.putExtra("selectedPlayers", new ArrayList<>(selectedPlayers));
-                        startActivity(intent);
-                    }
-                    else
-                        Toast.makeText(SelectPlayersActivity.this, "Sélectionnez un seul joueur", Toast.LENGTH_SHORT).show();
-
-                }
-            }
+        Button lancer = findViewById(R.id.plateau_jeu);
+        lancer.setOnClickListener(v -> {
+            vibrate();
+            if (isMusicBound) { unbindService(musicConnection); isMusicBound = false; }
+            lancerJeu(selectedGameItem);
         });
 
         gridView = findViewById(R.id.player_grid_view);
-        selectedPlayers = new ArrayList<>();
+        selectedPlayers  = new ArrayList<>();
         displayedPlayers = new ArrayList<>();
 
-        // Ne pas définir le gestionnaire de clic long ici
-        playerAdapter = new PlayerItemAdapter(this, displayedPlayers, null, new PlayerItemAdapter.OnPlayerItemClickListener() {
-            @Override
-            public void onPlayerItemClick(PlayerItem playerItem) {
-                vibrate();
-                togglePlayerSelection(playerItem);
-                updateGridView();
-            }
+        playerAdapter = new PlayerItemAdapter(this, displayedPlayers, null, playerItem -> {
+            vibrate();
+            togglePlayerSelection(playerItem);
+            updateGridView();
         });
 
         new GetJoueursAsyncTask(this, db).execute();
-
         gridView.setAdapter(playerAdapter);
     }
 
+    private void lancerJeu(GameItem selectedGameItem) {
+        eGames type = selectedGameItem.getType();
+
+        if (type == eGames.Standard301 || type == eGames.Standard501 || type == eGames.Standard701) {
+            if (selectedPlayers.size() > 0)
+                startGame(StandardGameActivity.class, selectedGameItem);
+            else
+                Toast.makeText(this, "Sélectionnez au moins un joueur", Toast.LENGTH_SHORT).show();
+
+        } else if (type == eGames.OriginalCricket || type == eGames.HiddenCricket || type == eGames.RandomCricket) {
+            if (selectedPlayers.size() > 1)
+                startGame(CricketGameActivity.class, selectedGameItem);
+            else
+                Toast.makeText(this, "Sélectionnez au moins deux joueurs", Toast.LENGTH_SHORT).show();
+
+        } else if (type == eGames.UnderTheHat) {
+            if (selectedPlayers.size() > 1 && selectedPlayers.size() < 10)
+                startGame(UnderHatActivity.class, selectedGameItem);
+            else if (selectedPlayers.size() < 2)
+                Toast.makeText(this, "Sélectionnez au moins deux joueurs", Toast.LENGTH_SHORT).show();
+            else
+                Toast.makeText(this, "Sélectionnez moins de dix joueurs", Toast.LENGTH_SHORT).show();
+
+        } else if (type == eGames.ShootOut) {
+            if (selectedPlayers.size() > 1)
+                startGame(ShootOutActivity.class, selectedGameItem);
+            else
+                Toast.makeText(this, "Sélectionnez au moins deux joueurs", Toast.LENGTH_SHORT).show();
+
+        } else if (type == eGames.MasterMind) {
+            if (selectedPlayers.size() == 1)
+                startGame(MasterMindActivity.class, selectedGameItem);
+            else
+                Toast.makeText(this, "Sélectionnez un seul joueur", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void startGame(Class<?> activityClass, GameItem selectedGameItem) {
+        startActivity(new Intent(this, activityClass)
+                .putExtra("selectedGame", selectedGameItem)
+                .putExtra("selectedPlayers", new ArrayList<>(selectedPlayers)));
+    }
 
     private void togglePlayerSelection(PlayerItem playerItem) {
-        if (selectedPlayers.contains(playerItem)) {
-            selectedPlayers.remove(playerItem);
-        } else {
-            selectedPlayers.add(playerItem);
-        }
+        if (selectedPlayers.contains(playerItem)) selectedPlayers.remove(playerItem);
+        else selectedPlayers.add(playerItem);
     }
 
     private void updateGridView() {
@@ -229,30 +156,20 @@ public class SelectPlayersActivity extends AppCompatActivity implements GetJoueu
         }
     }
 
-
     @Override
     public void onJoueursLoaded(List<PlayerItem> joueurs) {
         allPlayers = joueurs;
         displayedPlayers.addAll(allPlayers);
         playerAdapter.notifyDataSetChanged();
     }
-    // Fonction pour faire vibrer le téléphone
+
     private void vibrate() {
-        if (vibrator != null && vibrator.hasVibrator()) {
-            // Vibration de 100 millisecondes
-            vibrator.vibrate(100);
-        }
+        if (vibrator != null && vibrator.hasVibrator()) vibrator.vibrate(100);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Arrête la vibration lors de la destruction de l'activité
-        if (vibrator != null) {
-            vibrator.cancel();
-        }
+        if (vibrator != null) vibrator.cancel();
     }
 }
-
-
-
