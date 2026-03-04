@@ -1,0 +1,323 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".gamesActivities.StandardGameActivity"
+    android:background="@drawable/metal">
+
+    <LinearLayout
+        android:id="@+id/topLayout"
+        android:layout_width="match_parent"
+        android:layout_height="120px"
+        android:layout_marginEnd="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp"
+        android:orientation="horizontal"
+        android:background="@drawable/customborderbuttons">
+
+        <TextView
+            android:id="@+id/titre_jeu"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingRight="10dp"
+            android:paddingLeft="10dp"
+
+            android:textColor="#08FF00"
+            android:textSize="30sp"
+            android:textStyle="bold"
+
+            android:shadowColor="#08FF00"
+            android:shadowDx="5"
+            android:shadowDy="5"
+            android:shadowRadius="10"
+
+            android:fontFamily="@font/neon"
+            android:gravity="center_vertical|center_horizontal"
+            tools:ignore="RtlCompat" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/topMidLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:layout_below="@id/topLayout"
+        android:layout_above="@id/bottomLayout">
+
+        <!-- Trois LinearLayout à côté les uns des autres -->
+        <!-- Chaque LinearLayout aura un tiers de la largeur de l'écran -->
+        <LinearLayout
+            android:id="@+id/firstLayout"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/joueur_courant"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:layout_marginBottom="10dp"
+                        android:text="Joueur"
+                        android:textColor="#08FF00"
+                        android:textSize="40dp"
+                        android:textStyle="bold"
+                        android:textAlignment="center"
+                        android:shadowColor="#FFF200"
+                        android:shadowDx="10"
+                        android:shadowDy="10"
+                        android:shadowRadius="20"
+                        android:fontFamily="@font/neon"/>
+                </LinearLayout>
+               <LinearLayout
+                   android:layout_width="match_parent"
+                   android:layout_height="match_parent"
+                   android:orientation="vertical">
+
+                   <TextView
+                        android:id="@+id/premierLance"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:textSize="18sp"
+                        android:shadowColor="#FFF200"
+                        android:shadowDx="10"
+                        android:shadowDy="10"
+                        android:shadowRadius="20"
+                        android:text="Joueur"
+                        android:textColor="#08FF00"
+                        android:gravity="center_horizontal"
+                        android:fontFamily="@font/bines"/>
+                    <TextView
+                        android:id="@+id/deuxiemeLance"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:textSize="18sp"
+                        android:shadowColor="#FFF200"
+                        android:shadowDx="10"
+                        android:shadowDy="10"
+                        android:shadowRadius="20"
+                        android:text="Joueur"
+                        android:textColor="#08FF00"
+                        android:gravity="center_horizontal"
+                        android:fontFamily="@font/bines"/>
+                    <TextView
+                        android:id="@+id/troisiemeLance"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="10dp"
+                        android:textSize="18sp"
+                        android:shadowColor="#FFF200"
+                        android:shadowDx="10"
+                        android:shadowDy="10"
+                        android:shadowRadius="20"
+                        android:text="Joueur"
+                        android:textColor="#08FF00"
+                        android:gravity="center_horizontal"
+                        android:fontFamily="@font/bines"/>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/secondLayout"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical">
+            <TextView
+                android:id="@+id/tours"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="tours"
+                android:textAlignment="center"
+                android:textColor="#F7FF00"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:fontFamily="@font/led"
+                android:shadowColor="#FF8C00"
+                android:shadowDx="15"
+                android:shadowDy="15"
+                android:shadowRadius="30"/>
+            <TextView
+                android:id="@+id/Points_restants"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginTop="30dp"
+                android:text="Points"
+                android:textAlignment="center"
+                android:textColor="#FA00F6"
+                android:textSize="70sp"
+                android:textStyle="bold"
+                app:fontFamily="@font/led"
+                android:shadowColor="#FA00F6"
+                android:shadowDx="15"
+                android:shadowDy="15"
+                android:shadowRadius="30"
+                tools:ignore="RtlCompat" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1">
+                    <TextView
+                        android:id="@+id/prop_un"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center_vertical"
+
+                        android:text="Dernier Tour !"
+                        android:textAlignment="center"
+                        android:textColor="#F7FF00"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        app:fontFamily="@font/led"
+                        android:gravity="center_vertical"
+
+                        android:shadowColor="#FF8C00"
+                        android:shadowDx="15"
+                        android:shadowDy="15"
+                        android:shadowRadius="30"
+                        tools:ignore="RtlCompat"
+                        android:visibility="invisible"/>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1">
+                    <TextView
+                        android:id="@+id/prop_deux"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center_vertical"
+
+                        android:text="Dernier Tour !"
+                        android:textAlignment="center"
+                        android:textColor="#F7FF00"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        app:fontFamily="@font/led"
+
+                        android:shadowColor="#FF8C00"
+                        android:shadowDx="15"
+                        android:shadowDy="15"
+                        android:shadowRadius="30"
+                        tools:ignore="RtlCompat"
+                        android:gravity="center_vertical"
+                        android:visibility="invisible"/>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1">
+                    <TextView
+                        android:id="@+id/prop_trois"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center_vertical"
+
+                        android:text="Dernier Tour !"
+                        android:textAlignment="center"
+                        android:textColor="#F7FF00"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        app:fontFamily="@font/led"
+
+                        android:shadowColor="#FF8C00"
+                        android:shadowDx="15"
+                        android:shadowDy="15"
+                        android:shadowRadius="30"
+                        tools:ignore="RtlCompat"
+                        android:gravity="center_vertical"
+                        android:visibility="invisible"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/thirdLayout"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+            <TextView
+                android:id="@+id/titre_adversaire"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="10dp"
+                android:text="Adversaires"
+                android:textAlignment="center"
+                android:shadowColor="#00FFEA"
+                android:shadowDx="15"
+                android:shadowDy="15"
+                android:shadowRadius="30"
+                android:textColor="#00FFEA"
+                android:textSize="40sp"
+                android:textStyle="bold"
+                app:fontFamily="@font/neon"
+                />
+                <GridView
+                    android:id="@+id/gridViewAdversaires"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:numColumns="1"
+                    android:scrollbars="vertical" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/bottomLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:orientation="vertical">
+
+        <GridLayout
+            android:id="@+id/gridLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:columnCount="9"
+            android:rowCount="3"/>
+    </LinearLayout>
+
+</RelativeLayout>

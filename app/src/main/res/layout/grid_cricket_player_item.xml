@@ -1,0 +1,148 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_play"
+    android:layout_width="match_parent"
+    android:layout_height="122px"
+    android:layout_marginBottom="2dp">
+
+    <TextView
+        android:id="@+id/playerIdTextView"
+        android:layout_width="215dp"
+        android:layout_height="match_parent"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="3dp"
+        android:paddingLeft="5dp"
+        android:layout_gravity="center_vertical"
+        android:gravity="center_horizontal"
+
+        android:text="@string/item_player_virtuel"
+        android:textSize="20sp"
+        android:textColor="#F7FF00"
+        android:textStyle="bold"
+        android:fontFamily="@font/beon"
+
+        android:shadowColor="#FF8C00"
+        android:shadowDx="15"
+        android:shadowDy="15"
+        android:shadowRadius="30"
+        />
+
+    <LinearLayout
+        android:layout_width="180dp"
+        android:layout_height="match_parent"
+        android:layout_marginRight="22dp"
+        android:layout_marginLeft="28dp"
+        android:gravity="center_vertical|center_horizontal">
+
+        <TextView
+            android:id="@+id/flechette_une"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
+            android:fontFamily="@font/neon"
+            android:shadowColor="#000000"
+            android:shadowDx="10"
+            android:shadowDy="10"
+            android:shadowRadius="20"
+            android:text="0"
+            android:textColor="#FA00F6"
+            android:textSize="30dp"
+            android:textStyle="bold"
+            android:gravity="center_vertical|center_horizontal"
+            android:visibility="invisible"/>
+
+        <TextView
+            android:id="@+id/flechette_deux"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
+
+            android:text="0"
+            android:textColor="#FA00F6"
+            android:textSize="30dp"
+            android:textStyle="bold"
+            android:gravity="center_vertical|center_horizontal"
+            android:shadowColor="#000000"
+            android:shadowDx="10"
+            android:shadowDy="10"
+            android:shadowRadius="20"
+            android:fontFamily="@font/neon"
+            android:visibility="invisible"/>
+
+        <TextView
+            android:id="@+id/flechette_trois"
+            android:layout_width="60dp"
+            android:layout_height="match_parent"
+
+            android:text="0"
+            android:textColor="#FA00F6"
+            android:textSize="30dp"
+            android:textStyle="bold"
+            android:gravity="center_vertical|center_horizontal"
+            android:shadowColor="#000000"
+            android:shadowDx="10"
+            android:shadowDy="10"
+            android:shadowRadius="20"
+            android:fontFamily="@font/neon"
+            android:visibility="invisible"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="905px"
+        android:layout_height="120px"
+        android:orientation="horizontal"
+        android:layout_marginEnd="6dp"
+        android:background="@drawable/custombordercricket"
+        android:paddingLeft="2dp"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/valeur_une"
+            android:layout_width="120px"
+            android:layout_height="120px"
+            android:gravity="center_vertical"/>
+
+        <ImageView
+            android:id="@+id/valeur_deux"
+            android:layout_width="120px"
+            android:layout_height="120px"
+            android:layout_marginLeft="10px"
+            android:gravity="center_vertical"/>
+
+        <ImageView
+            android:id="@+id/valeur_trois"
+            android:layout_width="120px"
+            android:layout_height="120px"
+            android:layout_marginLeft="10px"
+            android:gravity="center_vertical"/>
+
+        <ImageView
+            android:id="@+id/valeur_quatre"
+            android:layout_width="120px"
+            android:layout_height="120px"
+            android:layout_marginLeft="10px"
+            android:gravity="center_vertical"/>
+
+        <ImageView
+            android:id="@+id/valeur_cinq"
+            android:layout_width="120px"
+            android:layout_height="120px"
+            android:layout_marginLeft="10px"
+            android:gravity="center_vertical"/>
+
+        <ImageView
+            android:id="@+id/valeur_six"
+            android:layout_width="120px"
+            android:layout_height="120px"
+            android:layout_marginLeft="10px"
+            android:gravity="center_vertical"/>
+
+        <ImageView
+            android:id="@+id/valeur_sept"
+            android:layout_width="120px"
+            android:layout_height="120px"
+            android:layout_marginLeft="10px"
+            android:gravity="center_vertical"/>
+
+    </LinearLayout>
+
+</LinearLayout>

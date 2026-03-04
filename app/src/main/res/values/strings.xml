@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">DartsLiveScorer</string>
+    <string name="title_activity_players">PlayersActivity</string>
+    <string name="NewGame">Nouvelle Partie</string>
+    <string name="PlayersList">Joueurs</string>
+    <string name="item_game_virtuel">nom du jeu</string>
+    <string name="item_player_virtuel">nom du joueur</string>
+    <string name="title_activity_add_player">AddPlayerActivity</string>
+    <string name="copyright">Pour transpirer comme des mouettes !</string>
+    <string name="title">Garage Darts</string>
+    <string name="joueursListe">Liste des joueurs</string>
+    <string name="retour"><![CDATA[<- Retour]]></string>
+    <string name="ajouter">+ Ajouter</string>
+    <string name="chooseGame">Choisissez un jeu</string>
+    <string name="joueurAjouter">Ajouter un joueur</string>
+    <string name="nouveauJoueurNom">Nom</string>
+    <string name="joueurPhotoSelect">Sélectionner une photo</string>
+    <string name="modifier_joueur">Modifier le joueur</string>
+    <string name="modifier_joueur_bouton">X Modifier</string>
+    <string name="stats_joueur">Statistiques</string>
+    <string name="title_activity_standard_game">StandardGameActivity</string>
+    <string name="lancer">Lancer le jeu</string>
+    <string name="selection_des_joueurs">Sélection des joueurs</string>
+    <string name="retour_short"><![CDATA[<-]]></string>
+    <string name="title_under_the_hat_game">Under The Hat !</string>
+    <string name="title_cricket_game">Cricket !</string>
+    <string name="title_standard_game">Classique : 301 !</string>
+    <string name="title_master_mind">Master Mind !</string>
+
+</resources>

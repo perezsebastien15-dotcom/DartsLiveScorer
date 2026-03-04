@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/logo_app"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/logo_app"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.DartsLiveScorer"
+        tools:targetApi="31">
+
+
+        <service android:name="models.commonModels.MusicService" />
+
+        <activity
+            android:name=".gamesActivities.MasterMindActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"/>
+        <activity
+            android:name=".commonActivities.TargetViewActivity"
+            android:exported="false"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".gamesActivities.ShootOutActivity"
+            android:exported="false"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".gamesActivities.UnderHatActivity"
+            android:exported="false"
+            android:screenOrientation="landscape" />
+        <activity
+            android:name=".gamesActivities.CricketGameActivity"
+            android:exported="false"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.DartsLiveScorer" />
+        <activity
+            android:name=".commonActivities.SelectPlayersActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".gamesActivities.StandardGameActivity"
+            android:exported="false"
+            android:label="@string/title_activity_standard_game"
+            android:screenOrientation="landscape"
+            android:theme="@style/Theme.DartsLiveScorer" />
+        <activity
+            android:name=".commonActivities.ModifyPlayerActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".commonActivities.AddPlayerActivity"
+            android:exported="false"
+            android:label="@string/title_activity_add_player"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.DartsLiveScorer" />
+        <activity
+            android:name=".commonActivities.GamesListActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".commonActivities.StatsActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".commonActivities.PlayersActivity"
+            android:exported="false"
+            android:label="@string/title_activity_players"
+            android:theme="@style/Theme.DartsLiveScorer" />
+        <activity
+            android:name=".commonActivities.IntroGameActivity"
+            android:exported="true"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".commonActivities.MainActivity"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+    </application>
+
+</manifest>

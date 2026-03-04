@@ -1,0 +1,72 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout_play"
+    android:layout_width="match_parent"
+    android:layout_height="50dp"
+    android:paddingLeft="50dp"
+    android:gravity="center_vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="120px"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/playerIdTextView"
+            android:layout_width="150dp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="90dp"
+            android:text="@string/item_player_virtuel"
+            android:textSize="20sp"
+            android:textColor="#F7FF00"
+            android:textStyle="bold"
+            android:fontFamily="@font/beon"
+
+            android:textAlignment="textStart"
+
+            android:shadowColor="#FF8C00"
+            android:shadowDx="15"
+            android:shadowDy="15"
+            android:shadowRadius="30"
+
+            android:paddingTop="7dp"
+            android:paddingRight="20dp"/>
+
+        <ImageView
+            android:id="@+id/valeur_une"
+            android:layout_width="120px"
+            android:layout_height="120px"
+            android:background="@drawable/customborderuth"/>
+
+        <ImageView
+            android:id="@+id/valeur_deux"
+            android:layout_width="120px"
+            android:layout_height="120px"
+            android:layout_marginLeft="10px"
+            android:background="@drawable/customborderuth" />
+
+        <ImageView
+            android:id="@+id/valeur_trois"
+            android:layout_width="120px"
+            android:layout_height="120px"
+            android:layout_marginLeft="10px"
+            android:background="@drawable/customborderuth" />
+
+        <ImageView
+            android:id="@+id/valeur_quatre"
+            android:layout_width="120px"
+            android:layout_height="120px"
+            android:layout_marginLeft="10px"
+            android:background="@drawable/customborderuth" />
+
+        <ImageView
+            android:id="@+id/valeur_cinq"
+            android:layout_width="120px"
+            android:layout_height="120px"
+            android:layout_marginLeft="10px"
+            android:background="@drawable/customborderuth" />
+
+    </LinearLayout>
+
+</LinearLayout>

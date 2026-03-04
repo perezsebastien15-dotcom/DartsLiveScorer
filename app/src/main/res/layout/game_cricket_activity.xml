@@ -1,0 +1,278 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".gamesActivities.CricketGameActivity"
+    android:background="@drawable/metal">
+
+    <LinearLayout
+        android:id="@+id/topLayout"
+        android:layout_width="match_parent"
+        android:layout_height="245px"
+        android:layout_marginEnd="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginBottom="5dp"
+        android:layout_marginTop="5dp"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="120px"
+
+            android:orientation="horizontal"
+            android:background="@drawable/customborderbuttons">
+
+            <TextView
+                android:id="@+id/titre_adversaire"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+
+                android:text="@string/title_cricket_game"
+                android:textColor="#08FF00"
+                android:textSize="30sp"
+                android:textStyle="bold"
+
+                android:shadowColor="#08FF00"
+                android:shadowDx="5"
+                android:shadowDy="5"
+                android:shadowRadius="10"
+
+                android:fontFamily="@font/neon"
+                android:gravity="center_vertical|center_horizontal"
+                tools:ignore="RtlCompat" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="120px"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="215dp"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="10dp"
+                android:paddingEnd="10dp"
+                android:text="Adversaires"
+
+                android:gravity="center_vertical|center_horizontal"
+                android:shadowColor="#00FFEA"
+                android:shadowDx="15"
+                android:shadowDy="15"
+                android:shadowRadius="30"
+                android:textColor="#00FFEA"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                app:fontFamily="@font/neon"/>
+
+            <TextView
+                android:id="@+id/nb_tours"
+                android:layout_width="180dp"
+                android:layout_height="match_parent"
+                android:layout_marginRight="25dp"
+                android:layout_marginLeft="15dp"
+                android:gravity="center_vertical|center_horizontal"
+                android:text="Tour : 1/20"
+                android:textColor="#08FF00"
+                android:textSize="25sp"
+                android:textStyle="bold"
+
+                android:shadowColor="#84000000"
+                android:shadowDx="10"
+                android:shadowDy="10"
+                android:shadowRadius="20"
+                android:fontFamily="@font/neon"
+                tools:ignore="RtlCompat"
+                android:clickable="true"
+                android:focusable="true" />
+
+            <LinearLayout
+                android:layout_width="900px"
+                android:layout_height="120px"
+                android:orientation="horizontal"
+                android:layout_marginStart="2dp"
+                android:layout_marginEnd="10dp">
+
+                <TextView
+                    android:id="@+id/valeur_une"
+                    android:layout_width="120px"
+                    android:layout_height="120px"
+
+                    android:text="20"
+                    android:textColor="#08FF00"
+                    android:textSize="40dp"
+                    android:textStyle="bold"
+
+                    android:shadowColor="#08FF00"
+                    android:shadowDx="5"
+                    android:shadowDy="5"
+                    android:shadowRadius="10"
+
+                    android:fontFamily="@font/neon"
+                    android:textAlignment="center"
+                    android:gravity="center_vertical"
+                    tools:ignore="RtlCompat" />
+
+                <TextView
+                    android:id="@+id/valeur_deux"
+                    android:layout_width="120px"
+                    android:layout_height="120px"
+
+                    android:layout_marginLeft="10px"
+                    android:fontFamily="@font/neon"
+                    android:shadowColor="#08FF00"
+                    android:shadowDx="5"
+                    android:shadowDy="5"
+                    android:shadowRadius="10"
+
+                    android:text="19"
+                    android:textColor="#08FF00"
+                    android:textSize="40dp"
+
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:gravity="center_vertical"
+                    tools:ignore="RtlCompat" />
+
+                <TextView
+                    android:id="@+id/valeur_trois"
+                    android:layout_width="120px"
+                    android:layout_height="120px"
+
+                    android:layout_marginLeft="10px"
+                    android:fontFamily="@font/neon"
+                    android:shadowColor="#08FF00"
+                    android:shadowDx="5"
+                    android:shadowDy="5"
+                    android:shadowRadius="10"
+
+                    android:text="18"
+                    android:textColor="#08FF00"
+                    android:textSize="40dp"
+
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:gravity="center_vertical"
+                    tools:ignore="RtlCompat" />
+
+                <TextView
+                    android:id="@+id/valeur_quatre"
+                    android:layout_width="120px"
+                    android:layout_height="120px"
+
+                    android:layout_marginLeft="10px"
+                    android:fontFamily="@font/neon"
+                    android:shadowColor="#08FF00"
+                    android:shadowDx="5"
+                    android:shadowDy="5"
+                    android:shadowRadius="10"
+
+                    android:text="17"
+                    android:textColor="#08FF00"
+                    android:textSize="40dp"
+
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:gravity="center_vertical"
+                    tools:ignore="RtlCompat" />
+
+                <TextView
+                    android:id="@+id/valeur_cinq"
+                    android:layout_width="120px"
+                    android:layout_height="120px"
+
+                    android:layout_marginLeft="10px"
+                    android:fontFamily="@font/neon"
+                    android:shadowColor="#08FF00"
+                    android:shadowDx="5"
+                    android:shadowDy="5"
+                    android:shadowRadius="10"
+
+                    android:text="16"
+                    android:textColor="#08FF00"
+                    android:textSize="40dp"
+
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:gravity="center_vertical"
+                    tools:ignore="RtlCompat" />
+
+                <TextView
+                    android:id="@+id/valeur_six"
+                    android:layout_width="120px"
+                    android:layout_height="120px"
+
+                    android:layout_marginLeft="10px"
+                    android:fontFamily="@font/neon"
+                    android:shadowColor="#08FF00"
+                    android:shadowDx="5"
+                    android:shadowDy="5"
+                    android:shadowRadius="10"
+
+                    android:text="15"
+                    android:textColor="#08FF00"
+                    android:textSize="40dp"
+
+                    android:textStyle="bold"
+                    android:textAlignment="center"
+                    android:gravity="center_vertical"
+                    tools:ignore="RtlCompat" />
+
+                <TextView
+                    android:id="@+id/valeur_sept"
+                    android:layout_width="120px"
+                    android:layout_height="120px"
+
+                    android:layout_marginLeft="10px"
+                    android:fontFamily="@font/neon"
+                    android:shadowColor="#08FF00"
+                    android:shadowDx="5"
+                    android:shadowDy="5"
+                    android:shadowRadius="10"
+
+                    android:text="B"
+                    android:textColor="#08FF00"
+                    android:textSize="40dp"
+                    android:textStyle="bold"
+
+                    android:textAlignment="center"
+                    android:gravity="center_vertical"
+                    tools:ignore="RtlCompat" />
+            </LinearLayout>
+
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/middleLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_below="@id/topLayout"
+        android:layout_above="@id/bottomLayout">
+
+        <GridView
+            android:id="@+id/gridViewAdversaires"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:numColumns="1"
+            android:scrollbars="vertical" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/bottomLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true">
+
+        <GridLayout
+            android:id="@+id/gridLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:columnCount="9"
+            android:rowCount="3" />
+    </LinearLayout>
+
+</RelativeLayout>
