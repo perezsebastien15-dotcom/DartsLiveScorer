@@ -21,10 +21,14 @@
     <color name="j6">#FFFF5722</color>
     <color name="selectedPlayerColor">#65FFFFFF</color>
 
-    <!-- Couleurs UI jeu — remplacent tous les Color.parseColor() hardcodés -->
+    <!-- Couleurs UI boutons de jeu -->
     <color name="button_text_default">#FFFFFFFF</color>
     <color name="button_text_disabled">#FF000000</color>
     <color name="button_text_active">#FFFA00F6</color>
     <color name="button_text_selected">#FFFFFF00</color>
     <color name="button_bg_default">#FF000000</color>
+
+    <!-- Couleurs spécifiques par jeu -->
+    <color name="cricket_value_active">#FF08FF00</color>
+    <color name="shootout_used">#FFFF0033</color>
 </resources>

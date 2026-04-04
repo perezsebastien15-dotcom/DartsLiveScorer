@@ -54,7 +54,7 @@ public class ModifyPlayerActivity extends AppCompatActivity {
 
         db = DartScorerDatabase.getDatabase(this);
 
-        long playerId   = getIntent().getLongExtra("playerId", 0);
+        long playerId     = getIntent().getLongExtra("playerId", 0);
         String playerName = getIntent().getStringExtra("playerName");
 
         nom = findViewById(R.id.nomEditText);
@@ -75,7 +75,7 @@ public class ModifyPlayerActivity extends AppCompatActivity {
     private void updateDatabase(long id, String nomSaisi) {
         if (!nomSaisi.isEmpty()) {
             Joueur currentPlayer = new Joueur();
-            currentPlayer.id  = id;
+            currentPlayer.id  = (int) id; // ✅ cast long → int (Room PrimaryKey est int)
             currentPlayer.nom = nomSaisi;
             new UpdateJoueurAsyncTask(this, db).execute(currentPlayer);
             startActivity(new Intent(this, PlayersActivity.class)

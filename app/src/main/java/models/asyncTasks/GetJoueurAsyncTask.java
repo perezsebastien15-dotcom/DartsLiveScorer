@@ -39,7 +39,8 @@ public class GetJoueurAsyncTask {
             if (playerId != null) {
                 Joueur joueur = db.dartScorerDao().getJoueurById(playerId);
                 if (joueur != null)
-                    result = new PlayerItem(joueur.id, joueur.nom, 0);
+                    // ✅ cast int → Long (PlayerItem attend un Long pour l'id)
+                    result = new PlayerItem((long) joueur.id, joueur.nom, 0);
             }
             final PlayerItem finalResult = result;
             mainHandler.post(() -> {

@@ -2,9 +2,7 @@ package com.example.dartslivescorer.gamesActivities;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -16,6 +14,7 @@ import android.widget.GridView;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
@@ -50,135 +49,90 @@ public class CricketGameActivity extends AppCompatActivity implements OnScoreUpd
     private CommonController commoncontroller;
     private CricketController controller;
     private GridLayout gridLayout;
-    private Button retour;
     private WindowInsetsControllerCompat windowInsetsController;
-
     private Vibrator vibrator;
-
     private MediaPlayer mediaPlayer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.game_cricket_activity);
 
-        // Initialise le MediaPlayer avec le fichier audio
-        //mediaPlayer = MediaPlayer.create(this, R.raw.bits);
-        //playMusic();
-
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        // Initialize the WindowInsetsControllerCompat
         windowInsetsController = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-
-        // Hide the system bars
         windowInsetsController.hide(WindowInsetsCompat.Type.systemBars());
 
-
-        // Récupérez le jeu choisi et les joueurs sélectionnés depuis l'intent
-        this.selectedGame = getIntent().getParcelableExtra("selectedGame");
+        this.selectedGame    = getIntent().getParcelableExtra("selectedGame");
         this.selectedPlayers = getIntent().getParcelableArrayListExtra("selectedPlayers");
 
         this.controller = new CricketController(this);
-
-        // Définition de l'écouteur pour les mises à jour de score
-        this.controller.setOnScoreUpdateListener(new models.OnScoreUpdateListener() {
-            @Override
-            public void onScoreUpdate(int score) {
-                if(eStates.EnCours.equals(controller.getStatut()))
-                    MAJInformations();
-                if(eStates.Termine.equals(controller.getStatut()))
-                    Termine();
-            }
+        this.controller.setOnScoreUpdateListener(score -> {
+            if (eStates.EnCours.equals(controller.getStatut())) MAJInformations();
+            if (eStates.Termine.equals(controller.getStatut())) Termine();
         });
 
-        TextView tour = findViewById(R.id.titre_adversaire);
+        TextView titre = findViewById(R.id.titre_adversaire);
+        titre.setOnTouchListener(onTouchListener);
 
-        TextView tours = findViewById(R.id.nb_tours);
-        tour.setOnTouchListener(onTouchListener);
-
-        if(this.selectedGame.getType().equals(eGames.OriginalCricket))
-            tour.setText("CRIKET STANDARD !");
-        if(this.selectedGame.getType().equals(eGames.HiddenCricket))
-            tour.setText("HIDDEN CRIKET !");
-        if(this.selectedGame.getType().equals(eGames.RandomCricket))
-            tour.setText("RANDOM CRIKET !");
-
+        if (this.selectedGame.getType().equals(eGames.OriginalCricket)) titre.setText("CRICKET STANDARD !");
+        if (this.selectedGame.getType().equals(eGames.HiddenCricket))   titre.setText("HIDDEN CRICKET !");
+        if (this.selectedGame.getType().equals(eGames.RandomCricket))   titre.setText("RANDOM CRICKET !");
 
         this.commoncontroller = new CommonController();
-        this.cricketPlayers = controller.InitialisePartie(this.selectedGame, this.selectedPlayers, DartScorerDatabase.getDatabase(this), this.commoncontroller);
+        this.cricketPlayers = controller.InitialisePartie(
+                this.selectedGame, this.selectedPlayers,
+                DartScorerDatabase.getDatabase(this), this.commoncontroller);
 
         this.gridLayout = findViewById(R.id.gridLayout);
-
         List<ScoreButtonItem> scoreButtonList = this.commoncontroller.InitScoreButtons();
 
         for (ScoreButtonItem scoreButton : scoreButtonList) {
             Button button = new Button(this);
             button.setLayoutParams(new GridLayout.LayoutParams(
                     GridLayout.spec(GridLayout.UNDEFINED, 1f),
-                    GridLayout.spec(GridLayout.UNDEFINED, 1f)
-            ));
-
-            /* Personnalisation des boutons */
+                    GridLayout.spec(GridLayout.UNDEFINED, 1f)));
             button.setId(scoreButton.getId());
             button.setText(scoreButton.getLabel());
             button.setTag(scoreButton.getType());
-
-            button.getBackground().setTint(Color.BLACK);
+            button.getBackground().setTint(getResources().getColor(R.color.button_bg_default, getTheme()));
             button.getBackground().setAlpha(150);
 
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    vibrate();
-                    if ((button.getTag().toString().equals(eButtons.Suivant.toString())) && (button.getText().toString().equals("Suivant"))) {
+            button.setOnClickListener(v -> {
+                vibrate();
+                String tag  = button.getTag().toString();
+                String text = button.getText().toString();
 
-                        controller.changementJoueur(controller.rotationJoueur());
-                        controller.InitPlayersAfterAction(true);
+                if (tag.equals(eButtons.Suivant.toString()) && text.equals("Suivant")) {
+                    controller.changementJoueur(controller.rotationJoueur());
+                    controller.InitPlayersAfterAction(true);
+                    if (controller.checkLastRound()) controller.checkTimeout();
+                    MAJInformations();
+                    if (eStates.Timeout.equals(controller.getStatut())) TimeOut();
 
-                        if (controller.checkLastRound())
-                            controller.checkTimeout();
+                } else if (tag.equals(eButtons.Multiple.toString())) {
+                    controller.changementMulti(scoreButton);
+                    MAJInformations();
 
-                        MAJInformations();
+                } else if (tag.equals(eButtons.Suivant.toString()) && text.equals("Miss !")) {
+                    controller.MAJFlechette(scoreButton);
+                    MAJInformations();
 
-                        if (eStates.Timeout.equals(controller.getStatut()))
-                            TimeOut();
-
-                    }
-                    else if (button.getTag().toString().equals(eButtons.Multiple.toString())) {
-                        controller.changementMulti(scoreButton);
-                        MAJInformations();
-                    }
-                    else if ((button.getTag().toString().equals(eButtons.Suivant.toString())) && (button.getText().toString().equals("Miss !"))) {
-                        controller.MAJFlechette(scoreButton);
-                        MAJInformations();
-                        }
-                    else if (button.getTag().toString().equals(eButtons.Fin.toString())) {
-                        AlertDialog.Builder builder = new AlertDialog.Builder(CricketGameActivity.this);
-                        builder.setTitle("Confirmation");
-                        builder.setMessage("Voulez-vous vraiment quitter ?");
-                        builder.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                // Si l'utilisateur clique sur "Oui", quittez l'activité
-                                Intent intent = new Intent(getApplicationContext(), GamesListActivity.class);
-                                startActivity(intent);
+                } else if (tag.equals(eButtons.Fin.toString())) {
+                    new AlertDialog.Builder(CricketGameActivity.this)
+                            .setTitle("Confirmation")
+                            .setMessage("Voulez-vous vraiment quitter ?")
+                            .setPositiveButton("Oui", (d, w) -> {
+                                startActivity(new Intent(getApplicationContext(), GamesListActivity.class));
                                 finish();
-                            }
-                        });
-                        builder.setNegativeButton("Non", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int which) {
-                                // Si l'utilisateur clique sur "Non", ne rien faire
-                                dialog.dismiss();
-                            }
-                        });
-                        AlertDialog dialog = builder.create();
-                        dialog.show();
-                    }
-                    else {
-                        controller.MAJFlechette(scoreButton);
-                    }
+                            })
+                            .setNegativeButton("Non", (d, w) -> d.dismiss())
+                            .create().show();
+
+                } else {
+                    controller.MAJFlechette(scoreButton);
                 }
             });
             gridLayout.addView(button);
-
         }
 
         SetCricketValues();
@@ -187,275 +141,127 @@ public class CricketGameActivity extends AppCompatActivity implements OnScoreUpd
 
     private void SetCricketValues() {
         List<CricketValueItem> values = this.controller.getCricketValues();
+        int[] ids = {R.id.valeur_une, R.id.valeur_deux, R.id.valeur_trois,
+                     R.id.valeur_quatre, R.id.valeur_cinq, R.id.valeur_six, R.id.valeur_sept};
+        String[] hidden = {"H", "I", "D", "D", "E", "N", "!"};
 
-        TextView un = findViewById(R.id.valeur_une);
-        TextView deux = findViewById(R.id.valeur_deux);
-        TextView trois = findViewById(R.id.valeur_trois);
-        TextView quatre = findViewById(R.id.valeur_quatre);
-        TextView cinq = findViewById(R.id.valeur_cinq);
-        TextView six = findViewById(R.id.valeur_six);
-        TextView sept = findViewById(R.id.valeur_sept);
-
-        if(!values.get(0).getHiddenItem())
-            un.setText(values.get(0).getLibelleItem());
-        else
-            un.setText("H");
-
-        if(!values.get(1).getHiddenItem())
-            deux.setText(values.get(1).getLibelleItem());
-        else
-            deux.setText("I");
-
-        if(!values.get(2).getHiddenItem())
-            trois.setText(values.get(2).getLibelleItem());
-        else
-            trois.setText("D");
-
-        if(!values.get(3).getHiddenItem())
-            quatre.setText(values.get(3).getLibelleItem());
-        else
-            quatre.setText("D");
-
-        if(!values.get(4).getHiddenItem())
-            cinq.setText(values.get(4).getLibelleItem());
-        else
-            cinq.setText("E");
-
-        if(!values.get(5).getHiddenItem())
-            six.setText(values.get(5).getLibelleItem());
-        else
-            six.setText("N");
-
-        if(!values.get(6).getHiddenItem())
-            sept.setText(values.get(6).getLibelleItem());
-        else
-            sept.setText("!");
+        for (int i = 0; i < ids.length; i++) {
+            TextView tv = findViewById(ids[i]);
+            tv.setText(!values.get(i).getHiddenItem() ? values.get(i).getLibelleItem() : hidden[i]);
+        }
     }
 
-    private void TimeOut() {
-        //1 - Afficher le Message
-        MAJInformations();
-
-        //2 - Afficher une fenetre OK pour terminer le jeu
-        afficherDialogueGagnant(controller.getWinner());
-    }
-
-    private void updateAdversairesList() {
-        List<CricketPlayerItem> adversaires = controller.getAdversaires();
-
-        CricketPlayerAdapter adapter = new CricketPlayerAdapter(this, adversaires);
-        GridView gridViewAdversaires = findViewById(R.id.gridViewAdversaires);
-        gridViewAdversaires.setAdapter(adapter);
-    }
-
-    public void MAJItemAvailable()
-    {
-        TextView valeur_une = findViewById(R.id.valeur_une);
-        TextView valeur_deux = findViewById(R.id.valeur_deux);
-        TextView valeur_trois = findViewById(R.id.valeur_trois);
-        TextView valeur_quatre = findViewById(R.id.valeur_quatre);
-        TextView valeur_cinq = findViewById(R.id.valeur_cinq);
-        TextView valeur_six = findViewById(R.id.valeur_six);
-        TextView valeur_sept = findViewById(R.id.valeur_sept);
-
+    private void MAJItemAvailable() {
         List<CricketValueItem> items = controller.getCricketValues();
+        int[] ids = {R.id.valeur_une, R.id.valeur_deux, R.id.valeur_trois,
+                     R.id.valeur_quatre, R.id.valeur_cinq, R.id.valeur_six, R.id.valeur_sept};
 
-        if(!items.get(0).getAvailable())
-            valeur_une.setTextColor(Color.DKGRAY);
-        else
-            valeur_une.setTextColor(Color.parseColor("#08FF00"));
-        if(!items.get(1).getAvailable())
-            valeur_deux.setTextColor(Color.DKGRAY);
-        else
-            valeur_deux.setTextColor(Color.parseColor("#08FF00"));
-        if(!items.get(2).getAvailable())
-            valeur_trois.setTextColor(Color.DKGRAY);
-        else
-            valeur_trois.setTextColor(Color.parseColor("#08FF00"));
-        if(!items.get(3).getAvailable())
-            valeur_quatre.setTextColor(Color.DKGRAY);
-        else
-            valeur_quatre.setTextColor(Color.parseColor("#08FF00"));
-        if(!items.get(4).getAvailable())
-            valeur_cinq.setTextColor(Color.DKGRAY);
-        else
-            valeur_cinq.setTextColor(Color.parseColor("#08FF00"));
-        if(!items.get(5).getAvailable())
-            valeur_six.setTextColor(Color.DKGRAY);
-        else
-            valeur_six.setTextColor(Color.parseColor("#08FF00"));
-        if(!items.get(6).getAvailable())
-            valeur_sept.setTextColor(Color.DKGRAY);
-        else
-            valeur_sept.setTextColor(Color.parseColor("#08FF00"));
+        // ✅ Couleurs via ressources
+        int colorActive   = ContextCompat.getColor(this, R.color.cricket_value_active);
+        int colorInactive = ContextCompat.getColor(this, android.R.color.darker_gray);
 
+        for (int i = 0; i < ids.length; i++) {
+            TextView tv = findViewById(ids[i]);
+            tv.setTextColor(items.get(i).getAvailable() ? colorActive : colorInactive);
+        }
     }
 
     private void MAJInformations() {
-        CricketPlayerItem joueur = this.controller.getJoueurCourant();
-        LanceItem lance = this.controller.getLance();
-
-        boolean lastRound = this.controller.checkLastRound();
-        boolean toggle = false;
+        LanceItem lance    = this.controller.getLance();
+        boolean lastRound  = this.controller.checkLastRound();
 
         updateAdversairesList();
 
         TextView tour = findViewById(R.id.nb_tours);
 
-        Integer points = 0;
-
-        if(lance.tir_trois != -1)
-            this.gridLayout = this.commoncontroller.toggleButtons(true,this.gridLayout);
+        // ✅ Context passé en paramètre
+        if (lance.tir_trois != -1)
+            this.gridLayout = this.commoncontroller.toggleButtons(true, this.gridLayout, this);
         else
-            this.gridLayout = this.commoncontroller.toggleButtons(false,this.gridLayout);
+            this.gridLayout = this.commoncontroller.toggleButtons(false, this.gridLayout, this);
 
-        if(!toggle)
-            this.gridLayout = this.commoncontroller.chargeMultiple(this.gridLayout);
+        this.gridLayout = this.commoncontroller.chargeMultiple(this.gridLayout, this);
 
-        if(!eStates.Timeout.equals(controller.getStatut()))
-            tour.setText("Tour : " + String.valueOf(joueur.getTour()) + " / " + String.valueOf(selectedGame.getTours()));
+        if (!eStates.Timeout.equals(controller.getStatut()))
+            tour.setText("Tour : " + controller.getJoueurCourant().getTour() + " / " + selectedGame.getTours());
 
-        if(lastRound)
-            tour.setText("Dernier Tour !");
+        if (lastRound) tour.setText("Dernier Tour !");
 
         MAJItemAvailable();
         SetCricketValues();
     }
 
-    private void Termine()
-    {
-        //1 - Afficher le score OK en VERT + Message
-        MAJInformations();
+    private void updateAdversairesList() {
+        GridView gridViewAdversaires = findViewById(R.id.gridViewAdversaires);
+        gridViewAdversaires.setAdapter(new CricketPlayerAdapter(this, controller.getAdversaires()));
+    }
 
-        //2 - Afficher une fenetre OK pour terminer le jeu
+    private void TimeOut() {
+        MAJInformations();
+        afficherDialogueGagnant(controller.getWinner());
+    }
+
+    private void Termine() {
+        MAJInformations();
         afficherDialogueGagnant(controller.getJoueurCourant().getName());
     }
 
     private void afficherDialogueGagnant(String gagnant) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        if(gagnant.equals("EX AEQUO !"))
-        {
-            builder.setTitle("Pas de gagnant");
-            builder.setMessage(gagnant);
-        }
-        else if(gagnant.contains(",")) {
-            builder.setTitle("Gagnants");
-            builder.setMessage(gagnant);
-        }
-        else
-        {
-            builder.setTitle("Gagnant");
-            builder.setMessage("Le gagnant est : " + gagnant);
-        }
+        if (gagnant.equals("EX AEQUO !"))       { builder.setTitle("Pas de gagnant"); builder.setMessage(gagnant); }
+        else if (gagnant.contains(","))          { builder.setTitle("Gagnants");       builder.setMessage(gagnant); }
+        else { builder.setTitle("Gagnant"); builder.setMessage("Le gagnant est : " + gagnant); }
 
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                Intent intent = new Intent(getApplicationContext(), GamesListActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
-        AlertDialog dialog = builder.create();
-        dialog.show();
+        builder.setPositiveButton("OK", (d, id) -> {
+            startActivity(new Intent(getApplicationContext(), GamesListActivity.class));
+            finish();
+        }).create().show();
     }
 
-
-    private View.OnTouchListener onTouchListener = new View.OnTouchListener() {
-        @Override
-        public boolean onTouch(View v, MotionEvent event) {
+    private final View.OnTouchListener onTouchListener = (v, event) -> {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
             vibrate();
-            switch (event.getAction()) {
-                case MotionEvent.ACTION_DOWN:
-                    afficherCible(); // Afficher la cible lorsque le doigt est appuyé
-                    return true; // Indique que l'événement a été traité
-                default:
-                    return false; // Laisser les autres événements non traités
-            }
+            afficherCible();
+            return true;
         }
+        return false;
     };
 
     private void afficherCible() {
-        List<Integer> touch = this.controller.getCurrentPlayerTouch();
+        List<Integer> touch       = this.controller.getCurrentPlayerTouch();
         List<Integer> closePlayer = this.controller.getClosedPlayerValues();
-        List<Integer> close = this.controller.getClosedValues();
+        List<Integer> close       = this.controller.getClosedValues();
         List<CricketValueItem> items = this.controller.getValuesItem();
 
-        int[] touchInt = new int[touch.size()];
-        int[] closeInt = new int[close.size()];
-        int[] closeSolo = new int[closePlayer.size()];
+        int[] touchInt    = toIntArray(touch);
+        int[] closeInt    = toIntArray(close);
+        int[] closeSolo   = toIntArray(closePlayer);
+        int[] itemCricket = new int[items != null ? items.size() : 0];
+        if (items != null)
+            for (int i = 0; i < items.size(); i++) itemCricket[i] = items.get(i).getIntLibelleItem();
 
-        int index = 0;
-
-        for (Integer touche : touch) {
-            touchInt[index] = touche;
-            index += 1;
-        }
-        index = 0;
-        for (Integer ferme : close) {
-            closeInt[index] = ferme;
-            index += 1;
-        }
-
-        int[] itemCricket = new int[0];
-        if (items != null && items.size() > 0) {
-            itemCricket = new int[items.size()];
-            index = 0;
-            for (CricketValueItem item : items) {
-                itemCricket[index] = item.getIntLibelleItem();
-                index += 1;
-            }
-        }
-
-        index = 0;
-        for (Integer item : closePlayer) {
-            closeSolo[index] = item;
-            index += 1;
-        }
-
-        //TouchInt sont les items touchés : Important pour le Hidden
-        //closeInt sont les items qu'a fermé le joueur : Permet de mettre en orange les zones
-        //Toute les valeurs en dehors de ces deux zones sont grisés
         TouchData datas = new TouchData(touchInt, closeInt, itemCricket, closeSolo);
-
-        // Afficher l'activité de la cible
-        Intent intent = new Intent(CricketGameActivity.this, TargetViewActivity.class);
-        intent.putExtra("selectedGame", this.selectedGame);
-        intent.putExtra("touch", datas);
-        startActivity(intent);
+        startActivity(new Intent(this, TargetViewActivity.class)
+                .putExtra("selectedGame", this.selectedGame)
+                .putExtra("touch", datas));
     }
 
-    @Override
-    public void onScoreUpdate(int score) {
-
+    private int[] toIntArray(List<Integer> list) {
+        int[] arr = new int[list.size()];
+        for (int i = 0; i < list.size(); i++) arr[i] = list.get(i);
+        return arr;
     }
-    // Fonction pour faire vibrer le téléphone
+
+    @Override public void onScoreUpdate(int score) {}
+
     private void vibrate() {
-        if (vibrator != null && vibrator.hasVibrator()) {
-            // Vibration de 100 millisecondes
-            vibrator.vibrate(100);
-        }
+        if (vibrator != null && vibrator.hasVibrator()) vibrator.vibrate(100);
     }
 
-    // Fonction pour jouer la musique
-    private void playMusic() {
-        if (mediaPlayer != null) {
-            // Répéter la musique en boucle
-            mediaPlayer.setLooping(true);
-            // Démarrer la lecture
-            mediaPlayer.start();
-        }
-    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Arrête la vibration lors de la destruction de l'activité
-        if (vibrator != null) {
-            vibrator.cancel();
-        }
-        // Arrête la musique lors de la destruction de l'activité
-        if (mediaPlayer != null) {
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
+        if (vibrator != null)    vibrator.cancel();
+        if (mediaPlayer != null) { mediaPlayer.release(); mediaPlayer = null; }
     }
 }

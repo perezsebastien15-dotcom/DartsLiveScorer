@@ -2,9 +2,7 @@ package com.example.dartslivescorer.gamesActivities;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Vibrator;
@@ -45,9 +43,7 @@ public class UnderHatActivity extends AppCompatActivity implements OnScoreUpdate
     private CommonController commoncontroller;
     private UTHController controller;
     private GridLayout gridLayout;
-    private Button retour;
     private WindowInsetsControllerCompat windowInsetsController;
-
     private Vibrator vibrator;
     private MediaPlayer mediaPlayer;
 
@@ -56,162 +52,97 @@ public class UnderHatActivity extends AppCompatActivity implements OnScoreUpdate
         super.onCreate(savedInstanceState);
         setContentView(R.layout.game_under_hat_activity);
 
-        // Initialise le MediaPlayer avec le fichier audio
-        //mediaPlayer = MediaPlayer.create(this, R.raw.bits);
-        //playMusic();
-
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        // Initialize the WindowInsetsControllerCompat
         windowInsetsController = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-
-        // Hide the system bars
         windowInsetsController.hide(WindowInsetsCompat.Type.systemBars());
 
-        // Récupérez le jeu choisi et les joueurs sélectionnés depuis l'intent
-        this.selectedGame = getIntent().getParcelableExtra("selectedGame");
+        this.selectedGame    = getIntent().getParcelableExtra("selectedGame");
         this.selectedPlayers = getIntent().getParcelableArrayListExtra("selectedPlayers");
 
         this.controller = new UTHController(this);
-
-        // Définition de l'écouteur pour les mises à jour de score
-        this.controller.setOnScoreUpdateListener(new models.OnScoreUpdateListener() {
-            @Override
-            public void onScoreUpdate(int score) {
-                if(eStates.EnCours.equals(controller.getStatut()))
-                    MAJInformations();
-                if(eStates.Termine.equals(controller.getStatut()))
-                    Termine();
-            }
+        this.controller.setOnScoreUpdateListener(score -> {
+            if (eStates.EnCours.equals(controller.getStatut())) MAJInformations();
+            if (eStates.Termine.equals(controller.getStatut())) Termine();
         });
 
         this.commoncontroller = new CommonController();
-        this.uthPlayers = controller.InitialisePartie(this.selectedGame, this.selectedPlayers, DartScorerDatabase.getDatabase(this),this.commoncontroller);
+        this.uthPlayers = controller.InitialisePartie(this.selectedGame, this.selectedPlayers,
+                DartScorerDatabase.getDatabase(this), this.commoncontroller);
 
         this.gridLayout = findViewById(R.id.gridLayout);
-
         List<ScoreButtonItem> scoreButtonList = this.commoncontroller.InitScoreButtons();
 
         for (ScoreButtonItem scoreButton : scoreButtonList) {
             Button button = new Button(this);
             button.setLayoutParams(new GridLayout.LayoutParams(
                     GridLayout.spec(GridLayout.UNDEFINED, 1f),
-                    GridLayout.spec(GridLayout.UNDEFINED, 1f)
-            ));
-
-            /* Personnalisation des boutons */
+                    GridLayout.spec(GridLayout.UNDEFINED, 1f)));
             button.setId(scoreButton.getId());
             button.setText(scoreButton.getLabel());
             button.setTag(scoreButton.getType());
 
-            if(scoreButton.getId()  != 22) {
-                button.getBackground().setTint(Color.BLACK);
+            // Le bouton "Simple" (ID 22) est masqué dans ce jeu
+            if (scoreButton.getId() != CommonController.ID_SIMPLE) {
+                button.getBackground().setTint(getResources().getColor(R.color.button_bg_default, getTheme()));
                 button.getBackground().setAlpha(150);
 
-                button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        vibrate();
-                        if ((button.getTag().toString().equals(eButtons.Suivant.toString())) && (button.getText().toString().equals("Suivant"))) {
+                button.setOnClickListener(v -> {
+                    vibrate();
+                    String tag  = button.getTag().toString();
+                    String text = button.getText().toString();
 
-                            //Verifier si le joueur a gagner, si non il perd un chapeau
-                            controller.checkSup();
+                    if (tag.equals(eButtons.Suivant.toString()) && text.equals("Suivant")) {
+                        controller.checkSup();
+                        controller.changementJoueur(controller.rotationJoueur());
+                        if (controller.checkLastRound()) controller.checkTimeout();
+                        controller.checkFinJeu();
+                        MAJInformations();
+                        if (eStates.Termine.equals(controller.getStatut())) Termine();
+                        if (eStates.Timeout.equals(controller.getStatut()))  TimeOut();
 
-                            //Changement du joueur
-                            controller.changementJoueur(controller.rotationJoueur());
+                    } else if (tag.equals(eButtons.Multiple.toString())) {
+                        controller.changementMulti(scoreButton);
+                        MAJInformations();
 
-                            //Si c'est le dernier tour
-                            if (controller.checkLastRound())
-                                controller.checkTimeout();
+                    } else if (tag.equals(eButtons.Suivant.toString()) && text.equals("Miss !")) {
+                        controller.MAJFlechette(scoreButton);
+                        MAJInformations();
 
-                            //Si c'est la fin du jeu
-                            controller.checkFinJeu();
-
-                            //On met à jour les infos de l'ecran
-                            MAJInformations();
-
-                            //Si un joueur a gagne
-                            if (eStates.Termine.equals(controller.getStatut()))
-                                Termine();
-
-                            //Si on a passé le nb de tour
-                            if (eStates.Timeout.equals(controller.getStatut()))
-                                TimeOut();
-
-                        }
-                        else if (button.getTag().toString().equals(eButtons.Multiple.toString())) {
-                            controller.changementMulti(scoreButton);
-                            MAJInformations();
-                        }
-                        else if ((button.getTag().toString().equals(eButtons.Suivant.toString())) && (button.getText().toString().equals("Miss !"))) {
-                            controller.MAJFlechette(scoreButton);
-                            MAJInformations();
-                        }
-                        else if (button.getTag().toString().equals(eButtons.Fin.toString())) {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(UnderHatActivity.this);
-                            builder.setTitle("Confirmation");
-                            builder.setMessage("Voulez-vous vraiment quitter ?");
-                            builder.setPositiveButton("Oui", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // Si l'utilisateur clique sur "Oui", quittez l'activité
-                                    Intent intent = new Intent(getApplicationContext(), GamesListActivity.class);
-                                    startActivity(intent);
+                    } else if (tag.equals(eButtons.Fin.toString())) {
+                        new AlertDialog.Builder(UnderHatActivity.this)
+                                .setTitle("Confirmation")
+                                .setMessage("Voulez-vous vraiment quitter ?")
+                                .setPositiveButton("Oui", (d, w) -> {
+                                    startActivity(new Intent(getApplicationContext(), GamesListActivity.class));
                                     finish();
-                                }
-                            });
-                            builder.setNegativeButton("Non", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                    // Si l'utilisateur clique sur "Non", ne rien faire
-                                    dialog.dismiss();
-                                }
-                            });
-                            AlertDialog dialog = builder.create();
-                            dialog.show();
-                        }
-                        else {
-                            controller.MAJFlechette(scoreButton);
-                        }
+                                })
+                                .setNegativeButton("Non", (d, w) -> d.dismiss())
+                                .create().show();
+                    } else {
+                        controller.MAJFlechette(scoreButton);
                     }
                 });
                 gridLayout.addView(button);
-            }
-            else
-            {
+            } else {
                 button.setVisibility(View.GONE);
+                gridLayout.addView(button);
             }
         }
 
         MAJInformations();
     }
 
-    private void TimeOut() {
-        //1 - Afficher le Message
-        MAJInformations();
-
-        //2 - Afficher une fenetre OK pour terminer le jeu
-        afficherDialogueGagnant(controller.getWinner());
-    }
-
-    private void updateAdversairesList() {
-        List<UTHPlayerItem> adversaires = controller.getAdversaires();
-
-        UTHPlayerAdapter adapter = new UTHPlayerAdapter(this, adversaires);
-        GridView gridViewAdversaires = findViewById(R.id.gridViewAdversaires);
-        gridViewAdversaires.setAdapter(adapter);
-    }
-
     private void MAJInformations() {
         UTHPlayerItem joueur = this.controller.getJoueurCourant();
-        LanceItem lance = this.controller.getLance();
-
-        boolean lastRound = this.controller.checkLastRound();
-        boolean toggle = false;
+        LanceItem lance      = this.controller.getLance();
+        boolean lastRound    = this.controller.checkLastRound();
 
         updateAdversairesList();
 
-        TextView flechette = findViewById(R.id.flechettes);
+        TextView flechette   = findViewById(R.id.flechettes);
         TextView score_battre = findViewById(R.id.score_battre);
         TextView score_joueur = findViewById(R.id.score_joueur);
-        TextView tour = findViewById(R.id.nb_tours);
+        TextView tour         = findViewById(R.id.nb_tours);
 
         if (lance.tir_un != -1) {
             flechette.setText(lance.str_tir_un);
@@ -219,93 +150,61 @@ public class UnderHatActivity extends AppCompatActivity implements OnScoreUpdate
         } else {
             flechette.setVisibility(View.GONE);
         }
-        if (lance.tir_deux != -1)
-            flechette.setText(lance.str_tir_un + " - " + lance.str_tir_deux);
-        if (lance.tir_trois != -1)
-            flechette.setText(lance.str_tir_un + " - " + lance.str_tir_deux + " - " + lance.str_tir_trois);
+        if (lance.tir_deux  != -1) flechette.setText(lance.str_tir_un + " - " + lance.str_tir_deux);
+        if (lance.tir_trois != -1) flechette.setText(lance.str_tir_un + " - " + lance.str_tir_deux + " - " + lance.str_tir_trois);
 
-        score_battre.setText("Cible : " + String.valueOf(controller.getCible()));
-        score_joueur.setText(joueur.getName() + " : " + String.valueOf(joueur.getScore()));
+        score_battre.setText("Cible : " + controller.getCible());
+        score_joueur.setText(joueur.getName() + " : " + joueur.getScore());
 
+        // ✅ Context passé en paramètre
         if (lance.tir_trois != -1)
-            this.gridLayout = this.commoncontroller.toggleButtons(true,this.gridLayout);
+            this.gridLayout = this.commoncontroller.toggleButtons(true, this.gridLayout, this);
         else
-            this.gridLayout = this.commoncontroller.toggleButtons(false,this.gridLayout);
+            this.gridLayout = this.commoncontroller.toggleButtons(false, this.gridLayout, this);
 
-        if (!toggle)
-            this.gridLayout = this.commoncontroller.chargeMultiple(this.gridLayout);
+        this.gridLayout = this.commoncontroller.chargeMultiple(this.gridLayout, this);
 
         if (!eStates.Timeout.equals(controller.getStatut()))
-            tour.setText("Tour : " + String.valueOf(joueur.getTour()) + " / " + String.valueOf(selectedGame.getTours()));
+            tour.setText("Tour : " + joueur.getTour() + " / " + selectedGame.getTours());
 
-        if (lastRound)
-            tour.setText("Dernier Tour !");
+        if (lastRound) tour.setText("Dernier Tour !");
     }
 
-    private void Termine()
-    {
-        //1 - Afficher le score OK en VERT + Message
-        MAJInformations();
+    private void updateAdversairesList() {
+        ((GridView) findViewById(R.id.gridViewAdversaires))
+                .setAdapter(new UTHPlayerAdapter(this, controller.getAdversaires()));
+    }
 
-        //2 - Afficher une fenetre OK pour terminer le jeu
+    private void TimeOut() {
+        MAJInformations();
+        afficherDialogueGagnant(controller.getWinner());
+    }
+
+    private void Termine() {
+        MAJInformations();
         afficherDialogueGagnant(controller.getJoueurCourant().getName());
     }
 
     private void afficherDialogueGagnant(String gagnant) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-
-        if(gagnant.contains(",")) {
-            builder.setTitle("Gagnants");
-            builder.setMessage("Les gagnants sont : "+gagnant);
-        }
-        else
-        {
-            builder.setTitle("Gagnant");
-            builder.setMessage("Le gagnant est : " + gagnant);
-        }
-
-        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int id) {
-                Intent intent = new Intent(getApplicationContext(), GamesListActivity.class);
-                startActivity(intent);
-                finish();
-            }
-        });
-        AlertDialog dialog = builder.create();
-        dialog.show();
+        if (gagnant.contains(",")) { builder.setTitle("Gagnants"); builder.setMessage("Les gagnants sont : " + gagnant); }
+        else { builder.setTitle("Gagnant"); builder.setMessage("Le gagnant est : " + gagnant); }
+        builder.setPositiveButton("OK", (d, id) -> {
+            startActivity(new Intent(getApplicationContext(), GamesListActivity.class));
+            finish();
+        }).create().show();
     }
 
-    @Override
-    public void onScoreUpdate(int score) {    }
+    @Override public void onScoreUpdate(int score) {}
 
-    // Fonction pour faire vibrer le téléphone
     private void vibrate() {
-        if (vibrator != null && vibrator.hasVibrator()) {
-            // Vibration de 100 millisecondes
-            vibrator.vibrate(100);
-        }
+        if (vibrator != null && vibrator.hasVibrator()) vibrator.vibrate(100);
     }
 
-    // Fonction pour jouer la musique
-    private void playMusic() {
-        if (mediaPlayer != null) {
-            // Répéter la musique en boucle
-            mediaPlayer.setLooping(true);
-            // Démarrer la lecture
-            mediaPlayer.start();
-        }
-    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Arrête la vibration lors de la destruction de l'activité
-        if (vibrator != null) {
-            vibrator.cancel();
-        }
-        // Arrête la musique lors de la destruction de l'activité
-        if (mediaPlayer != null) {
-            mediaPlayer.release();
-            mediaPlayer = null;
-        }
+        if (vibrator != null)    vibrator.cancel();
+        if (mediaPlayer != null) { mediaPlayer.release(); mediaPlayer = null; }
     }
 }

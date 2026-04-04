@@ -44,7 +44,8 @@ public class GetJoueursAsyncTask {
             List<PlayerItem> playerItems = new ArrayList<>();
             for (Joueur joueur : db.dartScorerDao().getAllJoueurs()) {
                 Log.d("GetJoueursAsyncTask", "id=" + joueur.id + " nom=" + joueur.nom);
-                playerItems.add(new PlayerItem(joueur.id, joueur.nom, 0));
+                // ✅ cast int → Long (PlayerItem attend un Long pour l'id)
+                playerItems.add(new PlayerItem((long) joueur.id, joueur.nom, 0));
             }
             mainHandler.post(() -> {
                 Context ctx = contextRef.get();
