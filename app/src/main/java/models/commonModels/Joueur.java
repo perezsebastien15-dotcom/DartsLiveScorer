@@ -14,27 +14,26 @@ public class Joueur {
     @ColumnInfo(name = "nom")
     public String nom;
 
-    // ✅ @Ignore : ce champ n'est pas retourné par toutes les requêtes (ex: SELECT id, nom)
-    // Room ne lèvera plus le warning CURSOR_MISMATCH pour ces requêtes
+    // url_photo non présente en base (pas de migration) — ignorée par Room
     @Ignore
-    @ColumnInfo(name = "url_photo")
     public String url_photo;
 
-    // Constructeur principal utilisé par Room (sans url_photo)
+    /**
+     * Constructeur sans argument : constructeur principal utilisé par Room
+     * pour l'insertion et la reconstruction depuis le curseur.
+     */
+    public Joueur() {}
+
+    @Ignore
     public Joueur(int id, String nom) {
         this.id  = id;
         this.nom = nom;
     }
 
-    // Constructeur complet utilisé lors de l'insertion avec photo
     @Ignore
     public Joueur(int id, String nom, String url_photo) {
         this.id        = id;
         this.nom       = nom;
         this.url_photo = url_photo;
     }
-
-    // Constructeur vide requis par Room
-    @Ignore
-    public Joueur() {}
 }

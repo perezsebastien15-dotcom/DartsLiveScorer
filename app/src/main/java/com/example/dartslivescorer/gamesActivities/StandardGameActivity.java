@@ -184,16 +184,30 @@ public class StandardGameActivity extends AppCompatActivity implements OnScoreUp
         if (!eStates.Timeout.equals(controller.getStatut()))
             tour.setText("Tour : " + joueur.getTour() + " / " + selectedGame.getTours());
 
-        if (joueur.getScore() <= 180) {
+        // Suggestions de finition — mises à jour à chaque fléchette
+        int scoreRestant = joueur.getScore();
+        if (scoreRestant >= 2 && scoreRestant <= 170) {
             List<String> combi = controller.getCombi();
             prop_un.setVisibility(View.GONE);
             prop_deux.setVisibility(View.GONE);
             prop_trois.setVisibility(View.GONE);
+
             if (combi != null && !combi.isEmpty()) {
+                // Affiche les suggestions de finition
                 if (combi.size() >= 1) { prop_un.setVisibility(View.VISIBLE);    prop_un.setText(combi.get(0)); }
                 if (combi.size() >= 2) { prop_deux.setVisibility(View.VISIBLE);  prop_deux.setText(combi.get(1)); }
                 if (combi.size() >= 3) { prop_trois.setVisibility(View.VISIBLE); prop_trois.setText(combi.get(2)); }
+            } else if (controller.isImpossibleCheckout()) {
+                // Score impossible à terminer avec les fléchettes restantes
+                prop_un.setVisibility(View.VISIBLE);
+                prop_un.setText("Impossible\nde terminer");
+                prop_deux.setVisibility(View.GONE);
+                prop_trois.setVisibility(View.GONE);
             }
+        } else {
+            prop_un.setVisibility(View.GONE);
+            prop_deux.setVisibility(View.GONE);
+            prop_trois.setVisibility(View.GONE);
         }
 
         pointsRestantsTextView.setText(String.valueOf(joueur.getScore()));
@@ -208,7 +222,9 @@ public class StandardGameActivity extends AppCompatActivity implements OnScoreUp
 
     private void TimeOut() {
         MAJInformations();
-        afficherDialogueGagnant(controller.getWinner().getName());
+        String gagnant = controller.getWinner().getName();
+        controller.enregistreGagnant(gagnant);
+        afficherDialogueGagnant(gagnant);
     }
 
     private void updateAdversairesList() {
@@ -228,7 +244,9 @@ public class StandardGameActivity extends AppCompatActivity implements OnScoreUp
 
     private void Termine() {
         MAJInformations();
-        afficherDialogueGagnant(controller.getJoueurCourant().getName());
+        String gagnant = controller.getJoueurCourant().getName();
+        controller.enregistreGagnant(gagnant);
+        afficherDialogueGagnant(gagnant);
     }
 
     private void afficherDialogueGagnant(String gagnant) {

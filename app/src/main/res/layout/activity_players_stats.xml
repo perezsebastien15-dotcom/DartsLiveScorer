@@ -1,74 +1,189 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".commonActivities.StatsActivity"
-    android:background="@drawable/wood">
+    android:orientation="vertical"
+    android:background="@drawable/wood"
+    tools:context=".commonActivities.StatsActivity">
 
-    <TextView
-        android:id="@+id/titre_stat"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="@string/stats_joueur"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:shadowColor="#00F7FF"
-        android:shadowDx="15"
-        android:shadowDy="15"
-        android:shadowRadius="30"
-        android:textColor="#00FFEA"
-        android:textSize="25sp"
-        android:textStyle="bold"
-        app:fontFamily="@font/bines"/>
-
-    <Button
-        android:id="@+id/jeuretour"
-        android:layout_width="150dp"
-        android:layout_height="30dp"
-        android:layout_marginStart="15dp"
-        android:layout_marginTop="15dp"
-        android:background="?android:attr/selectableItemBackground"
-        android:gravity="start"
-        android:text="@string/retour"
-        android:textColor="#FA00F6"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:fontFamily="@font/led"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/titre_stat"
-        android:shadowColor="#FA00F6"
-        android:shadowDx="15"
-        android:shadowDy="15"
-        android:shadowRadius="30"/>
-
+    <!-- ═══════ ENTÊTE FIXE ═══════ -->
     <LinearLayout
-        android:id="@+id/lay_top"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/titre_stat"
-        android:layout_marginTop="100dp"
         android:orientation="vertical"
-        app:layout_constraintTop_toBottomOf="@id/jeuretour"
-        android:padding="16dp">
+        android:background="#CC111122"
+        android:paddingHorizontal="14dp"
+        android:paddingTop="10dp"
+        android:paddingBottom="6dp">
 
-        <EditText
-            android:id="@+id/nomEditText"
+        <!-- Ligne titre + retour -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/nouveauJoueurNom"
-            android:textSize="20sp"
-            android:shadowColor="#FFF200"
-            android:shadowDx="15"
-            android:shadowDy="15"
-            android:shadowRadius="30"
-            android:textColor="#FFF200"
-            android:textStyle="bold"
-            android:fontFamily="@font/bines"
-            />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <Button
+                android:id="@+id/jeuretour"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:background="?android:attr/selectableItemBackground"
+                android:text="@string/retour"
+                android:textColor="#FA00F6"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:fontFamily="@font/led"
+                android:shadowColor="#FA00F6"
+                android:shadowDx="5" android:shadowDy="5" android:shadowRadius="14"/>
+
+            <TextView
+                android:id="@+id/stats_nom"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="—"
+                android:textColor="#FFF200"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:shadowColor="#FFF200"
+                android:shadowDx="5" android:shadowDy="5" android:shadowRadius="14"
+                android:fontFamily="@font/neon"/>
+        </LinearLayout>
+
+        <!-- Sélecteur de jeu — tabs horizontaux scrollables -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/tabs_jeux"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"/>
+        </HorizontalScrollView>
+
     </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- ═══════ CONTENU SCROLLABLE ═══════ -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="14dp"
+            android:paddingBottom="24dp">
+
+            <!-- Section : Résultats -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="14dp" android:layout_marginBottom="6dp"
+                android:text="🏆  Résultats"
+                android:textColor="#00FFEA" android:textSize="17sp" android:textStyle="bold"
+                android:fontFamily="@font/bines"
+                android:shadowColor="#00FFEA" android:shadowDx="0" android:shadowDy="0" android:shadowRadius="8"/>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="6dp">
+                <include layout="@layout/stat_card" android:id="@+id/card_parties"   android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp"/>
+                <include layout="@layout/stat_card" android:id="@+id/card_victoires" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="4dp"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="6dp">
+                <include layout="@layout/stat_card" android:id="@+id/card_defaites"  android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp"/>
+                <include layout="@layout/stat_card" android:id="@+id/card_winrate"   android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="4dp"/>
+            </LinearLayout>
+
+            <!-- Section : Scores -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" android:layout_marginBottom="6dp"
+                android:text="🎯  Scores par tour"
+                android:textColor="#00FFEA" android:textSize="17sp" android:textStyle="bold"
+                android:fontFamily="@font/bines"
+                android:shadowColor="#00FFEA" android:shadowDx="0" android:shadowDy="0" android:shadowRadius="8"/>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="6dp">
+                <include layout="@layout/stat_card" android:id="@+id/card_moyenne"  android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp"/>
+                <include layout="@layout/stat_card" android:id="@+id/card_meilleur" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="4dp"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="6dp">
+                <include layout="@layout/stat_card" android:id="@+id/card_mauvais"  android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp"/>
+                <include layout="@layout/stat_card" android:id="@+id/card_tours"    android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="4dp"/>
+            </LinearLayout>
+
+            <!-- Section : Performances -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" android:layout_marginBottom="6dp"
+                android:text="⚡  Performances"
+                android:textColor="#00FFEA" android:textSize="17sp" android:textStyle="bold"
+                android:fontFamily="@font/bines"
+                android:shadowColor="#00FFEA" android:shadowDx="0" android:shadowDy="0" android:shadowRadius="8"/>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="6dp">
+                <include layout="@layout/stat_card" android:id="@+id/card_180"      android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp"/>
+                <include layout="@layout/stat_card" android:id="@+id/card_140plus"  android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="4dp"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="6dp">
+                <include layout="@layout/stat_card" android:id="@+id/card_100plus"  android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp"/>
+                <include layout="@layout/stat_card" android:id="@+id/card_parfaits" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="4dp"/>
+            </LinearLayout>
+
+            <!-- Section : Fléchettes -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="10dp" android:layout_marginBottom="6dp"
+                android:text="🎲  Fléchettes"
+                android:textColor="#00FFEA" android:textSize="17sp" android:textStyle="bold"
+                android:fontFamily="@font/bines"
+                android:shadowColor="#00FFEA" android:shadowDx="0" android:shadowDy="0" android:shadowRadius="8"/>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="6dp">
+                <include layout="@layout/stat_card" android:id="@+id/card_touchees"  android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp"/>
+                <include layout="@layout/stat_card" android:id="@+id/card_manquees"  android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="4dp"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="6dp">
+                <include layout="@layout/stat_card" android:id="@+id/card_moy_f1"   android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp"/>
+                <include layout="@layout/stat_card" android:id="@+id/card_moy_f2"   android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="4dp"/>
+            </LinearLayout>
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="horizontal" android:layout_marginBottom="6dp">
+                <include layout="@layout/stat_card" android:id="@+id/card_moy_f3"    android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginEnd="4dp"/>
+                <include layout="@layout/stat_card" android:id="@+id/card_precision" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="4dp"/>
+            </LinearLayout>
+
+            <!-- Section : Graphiques -->
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
+                android:layout_marginTop="14dp" android:layout_marginBottom="6dp"
+                android:text="📊  Graphiques"
+                android:textColor="#00FFEA" android:textSize="17sp" android:textStyle="bold"
+                android:fontFamily="@font/bines"
+                android:shadowColor="#00FFEA" android:shadowDx="0" android:shadowDy="0" android:shadowRadius="8"/>
+
+            <com.example.dartslivescorer.adapters.PieChartView
+                android:id="@+id/pie_victoires"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:layout_marginBottom="14dp"/>
+
+            <com.example.dartslivescorer.adapters.PieChartView
+                android:id="@+id/pie_scores"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:layout_marginBottom="14dp"/>
+
+            <com.example.dartslivescorer.adapters.PieChartView
+                android:id="@+id/pie_flechettes"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:layout_marginBottom="14dp"/>
+
+            <!-- Vues legacy cachées (compatibilité) -->
+            <TextView android:id="@+id/stats_parties"   android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+            <TextView android:id="@+id/stats_victoires" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+            <TextView android:id="@+id/stats_moyenne"   android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+            <TextView android:id="@+id/stats_meilleur"  android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+            <TextView android:id="@+id/stats_180"       android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone"/>
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

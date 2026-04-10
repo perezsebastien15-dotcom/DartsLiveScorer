@@ -1,6 +1,5 @@
 package models.commonModels;
 
-
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
@@ -15,6 +14,10 @@ public class Lance {
 
     @ColumnInfo(name = "id_joueur")
     public long idJoueur;
+
+    /** Type de jeu : "Standard301", "Standard501", "Standard701", "OriginalCricket", etc. */
+    @ColumnInfo(name = "type_jeu")
+    public String typeJeu;
 
     public int tir_un;
     public int tir_deux;

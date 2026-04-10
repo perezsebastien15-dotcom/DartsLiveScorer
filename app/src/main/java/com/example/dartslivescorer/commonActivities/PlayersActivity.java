@@ -5,9 +5,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
+import android.view.View;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
@@ -17,21 +21,27 @@ import androidx.core.view.WindowInsetsControllerCompat;
 import com.example.dartslivescorer.R;
 import com.example.dartslivescorer.adapters.PlayerItemAdapter;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import models.DartScorerDatabase;
-import models.asyncTasks.DeleteJoueurAsyncTask;
-import models.asyncTasks.GetJoueursAsyncTask;
+import models.commonModels.Joueur;
 import models.commonModels.MusicService;
 import models.gamesModels.PlayerItem;
 
-public class PlayersActivity extends AppCompatActivity implements GetJoueursAsyncTask.OnJoueursLoadedListener {
+public class PlayersActivity extends AppCompatActivity {
 
     private DartScorerDatabase db;
     private GridView gridView;
+    private PlayerItemAdapter adapter;
     private WindowInsetsControllerCompat windowInsetsController;
     private MusicService musicService;
     private boolean isMusicBound = false;
+
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
     private final ServiceConnection musicConnection = new ServiceConnection() {
         @Override public void onServiceConnected(ComponentName name, IBinder service) {
@@ -54,10 +64,19 @@ public class PlayersActivity extends AppCompatActivity implements GetJoueursAsyn
         windowInsetsController = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
         windowInsetsController.hide(WindowInsetsCompat.Type.systemBars());
 
-        db = DartScorerDatabase.getDatabase(this);
-        new GetJoueursAsyncTask(this, db).execute();
-
         gridView = findViewById(R.id.player_grid_view);
+
+        // Adapter initialisé avec une liste vide — sera rempli après chargement
+        adapter = new PlayerItemAdapter(
+                this,
+                new ArrayList<>(),
+                (playerItem, clickType) -> handlePlayerItemClick(playerItem, clickType),
+                playerItem -> startActivity(
+                        new Intent(getApplicationContext(), StatsActivity.class)
+                                .putExtra("playerId", playerItem.getId())
+                                .putExtra("playerName", playerItem.getName()))
+        );
+        gridView.setAdapter(adapter);
 
         Button retour = findViewById(R.id.jeuretour);
         retour.setOnClickListener(v -> {
@@ -72,22 +91,56 @@ public class PlayersActivity extends AppCompatActivity implements GetJoueursAsyn
                     .putExtra("MusicServiceId", "uniqueMusicServiceId"));
             finish();
         });
+
+        // Chargement DB + joueurs entièrement en background
+        chargerJoueurs();
     }
 
-    private void populateGridView(List<PlayerItem> joueurs) {
-        gridView = findViewById(R.id.player_grid_view);
-        gridView.setAdapter(new PlayerItemAdapter(this, joueurs,
-                (playerItem, clickType) -> handlePlayerItemClick(playerItem, clickType),
-                playerItem -> { /* Stats : non implémenté */ }
-        ));
+    private void chargerJoueurs() {
+        executor.execute(() -> {
+            try {
+                // Ouvre la DB (+ migrations) hors thread principal
+                db = DartScorerDatabase.getDatabase(this);
+
+                List<PlayerItem> joueurs = new ArrayList<>();
+                for (Joueur j : db.dartScorerDao().getAllJoueurs()) {
+                    joueurs.add(new PlayerItem((long) j.id, j.nom, 0));
+                }
+
+                mainHandler.post(() -> {
+                    if (!isFinishing() && !isDestroyed()) {
+                        afficherJoueurs(joueurs);
+                    }
+                });
+            } catch (Exception e) {
+                mainHandler.post(() -> {
+                    if (!isFinishing() && !isDestroyed()) {
+                        afficherJoueurs(new ArrayList<>());
+                    }
+                });
+            }
+        });
+    }
+
+    private void afficherJoueurs(List<PlayerItem> joueurs) {
+        // Message si aucun joueur
+        TextView vide = findViewById(R.id.tv_aucun_joueur);
+        if (vide != null) {
+            vide.setVisibility(joueurs.isEmpty() ? View.VISIBLE : View.GONE);
+        }
+        adapter.updatePlayerList(joueurs);
     }
 
     private void handlePlayerItemClick(PlayerItem playerItem, String type) {
         if ("Suppr".equals(type)) {
-            new DeleteJoueurAsyncTask(this, db, playerItem.getId()).execute();
-            startActivity(new Intent(getApplicationContext(), PlayersActivity.class)
-                    .putExtra("MusicServiceId", "uniqueMusicServiceId"));
-            finish();
+            executor.execute(() -> {
+                db.dartScorerDao().deleteJoueurById(playerItem.getId());
+                mainHandler.post(() -> {
+                    startActivity(new Intent(getApplicationContext(), PlayersActivity.class)
+                            .putExtra("MusicServiceId", "uniqueMusicServiceId"));
+                    finish();
+                });
+            });
         } else if ("Modif".equals(type)) {
             startActivity(new Intent(getApplicationContext(), ModifyPlayerActivity.class)
                     .putExtra("playerId", playerItem.getId())
@@ -98,7 +151,9 @@ public class PlayersActivity extends AppCompatActivity implements GetJoueursAsyn
     }
 
     @Override
-    public void onJoueursLoaded(List<PlayerItem> joueurs) {
-        populateGridView(joueurs);
+    protected void onDestroy() {
+        super.onDestroy();
+        executor.shutdown();
+        if (isMusicBound) { unbindService(musicConnection); isMusicBound = false; }
     }
 }

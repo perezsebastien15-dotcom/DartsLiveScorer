@@ -63,6 +63,20 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_aucun_joueur"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Aucun joueur enregistré.\nAppuyez sur + Ajouter pour commencer."
+            android:textColor="#00FFEA"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:padding="24dp"
+            android:visibility="gone"
+            android:fontFamily="@font/bines"/>
+
             <GridView
                 android:id="@+id/player_grid_view"
                 android:layout_width="wrap_content"
