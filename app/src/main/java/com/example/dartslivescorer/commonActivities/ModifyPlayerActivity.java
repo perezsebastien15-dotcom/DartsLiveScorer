@@ -5,9 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.text.InputFilter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -20,22 +18,18 @@ import androidx.core.view.WindowInsetsControllerCompat;
 
 import com.example.dartslivescorer.R;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import models.DartScorerDatabase;
+import models.asyncTasks.UpdateJoueurAsyncTask;
 import models.commonModels.Joueur;
 import models.commonModels.MusicService;
 
 public class ModifyPlayerActivity extends AppCompatActivity {
 
     private EditText nom;
+    private DartScorerDatabase db;
     private WindowInsetsControllerCompat windowInsetsController;
     private MusicService musicService;
     private boolean isMusicBound = false;
-
-    private final ExecutorService executor    = Executors.newSingleThreadExecutor();
-    private final Handler         mainHandler = new Handler(Looper.getMainLooper());
 
     private final ServiceConnection musicConnection = new ServiceConnection() {
         @Override public void onServiceConnected(ComponentName name, IBinder service) {
@@ -73,46 +67,27 @@ public class ModifyPlayerActivity extends AppCompatActivity {
         });
 
         Button modifier = findViewById(R.id.modifier_joueur);
-        modifier.setOnClickListener(v -> updateJoueur(playerId, nom.getText().toString().trim()));
+        modifier.setOnClickListener(v -> updateDatabase(playerId, nom.getText().toString().trim()));
+
+        // ── DB init en background — migrations comprises ──────────────────────
+        DartScorerDatabase.initAsync(this, () -> db = DartScorerDatabase.getDatabase(this));
     }
 
-    private void updateJoueur(long id, String nomSaisi) {
+    private void updateDatabase(long id, String nomSaisi) {
         if (nomSaisi.isEmpty()) {
             Toast.makeText(this, "Veuillez saisir un nom", Toast.LENGTH_SHORT).show();
             return;
         }
-
-        Button modifier = findViewById(R.id.modifier_joueur);
-        modifier.setEnabled(false);
-
-        executor.execute(() -> {
-            try {
-                DartScorerDatabase db = DartScorerDatabase.getDatabase(this);
-                Joueur joueur = new Joueur();
-                joueur.id  = (int) id;
-                joueur.nom = nomSaisi;
-                db.dartScorerDao().updateJoueur(joueur);
-
-                mainHandler.post(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
-                        startActivity(new Intent(this, PlayersActivity.class)
-                                .putExtra("MusicServiceId", "uniqueMusicServiceId"));
-                        finish();
-                    }
-                });
-            } catch (Exception e) {
-                mainHandler.post(() -> {
-                    modifier.setEnabled(true);
-                    Toast.makeText(this, "Erreur lors de la modification", Toast.LENGTH_SHORT).show();
-                });
-            }
-        });
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        executor.shutdown();
-        if (isMusicBound) { unbindService(musicConnection); isMusicBound = false; }
+        if (db == null) {
+            Toast.makeText(this, "Base de données non prête, réessayez", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        Joueur currentPlayer = new Joueur();
+        currentPlayer.id  = (int) id;
+        currentPlayer.nom = nomSaisi;
+        new UpdateJoueurAsyncTask(this, db).execute(currentPlayer);
+        startActivity(new Intent(this, PlayersActivity.class)
+                .putExtra("MusicServiceId", "uniqueMusicServiceId"));
+        finish();
     }
 }

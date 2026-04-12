@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.GridView;
@@ -33,21 +34,24 @@ import models.gamesModels.PlayerItem;
 
 public class PlayersActivity extends AppCompatActivity {
 
-    private DartScorerDatabase db;
-    private GridView gridView;
+    private static final String TAG = "PlayersActivity";
+
+    private GridView          gridView;
     private PlayerItemAdapter adapter;
     private WindowInsetsControllerCompat windowInsetsController;
     private MusicService musicService;
     private boolean isMusicBound = false;
 
-    private final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private final ExecutorService executor    = Executors.newSingleThreadExecutor();
+    private final Handler         mainHandler = new Handler(Looper.getMainLooper());
 
     private final ServiceConnection musicConnection = new ServiceConnection() {
         @Override public void onServiceConnected(ComponentName name, IBinder service) {
-            musicService = ((MusicService.LocalBinder) service).getService();
-            musicService.startMusic();
-            isMusicBound = true;
+            try {
+                musicService = ((MusicService.LocalBinder) service).getService();
+                musicService.startMusic();
+                isMusicBound = true;
+            } catch (Exception e) { Log.e(TAG, "MusicService erreur", e); }
         }
         @Override public void onServiceDisconnected(ComponentName name) { isMusicBound = false; }
     };
@@ -57,24 +61,28 @@ public class PlayersActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_players_list);
 
-        String musicServiceId = getIntent().getStringExtra("MusicServiceId");
-        if (musicServiceId != null)
-            bindService(new Intent(this, MusicService.class), musicConnection, Context.BIND_AUTO_CREATE);
+        try {
+            windowInsetsController = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+            if (windowInsetsController != null)
+                windowInsetsController.hide(WindowInsetsCompat.Type.systemBars());
+        } catch (Exception e) { Log.e(TAG, "WindowInsets erreur", e); }
 
-        windowInsetsController = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars());
+        try {
+            String musicServiceId = getIntent().getStringExtra("MusicServiceId");
+            if (musicServiceId != null)
+                bindService(new Intent(this, MusicService.class), musicConnection, Context.BIND_AUTO_CREATE);
+        } catch (Exception e) { Log.e(TAG, "MusicService bind erreur", e); }
 
         gridView = findViewById(R.id.player_grid_view);
 
-        // Adapter initialisé avec une liste vide — sera rempli après chargement
         adapter = new PlayerItemAdapter(
                 this,
                 new ArrayList<>(),
                 (playerItem, clickType) -> handlePlayerItemClick(playerItem, clickType),
                 playerItem -> startActivity(
                         new Intent(getApplicationContext(), StatsActivity.class)
-                                .putExtra("playerId", playerItem.getId())
-                                .putExtra("playerName", playerItem.getName()))
+                                .putExtra("playerId",    playerItem.getId())
+                                .putExtra("playerName",  playerItem.getName()))
         );
         gridView.setAdapter(adapter);
 
@@ -92,59 +100,68 @@ public class PlayersActivity extends AppCompatActivity {
             finish();
         });
 
-        // Chargement DB + joueurs entièrement en background
         chargerJoueurs();
     }
 
     private void chargerJoueurs() {
         executor.execute(() -> {
             try {
-                // Ouvre la DB (+ migrations) hors thread principal
-                db = DartScorerDatabase.getDatabase(this);
+                Log.d(TAG, "Chargement joueurs...");
+                DartScorerDatabase db = DartScorerDatabase.getDatabase(getApplicationContext());
+                Log.d(TAG, "DB obtenue");
 
                 List<PlayerItem> joueurs = new ArrayList<>();
-                for (Joueur j : db.dartScorerDao().getAllJoueurs()) {
-                    joueurs.add(new PlayerItem((long) j.id, j.nom, 0));
-                }
+                List<Joueur> liste = db.dartScorerDao().getAllJoueurs();
+                Log.d(TAG, "Nb joueurs en base : " + liste.size());
+
+                for (Joueur j : liste)
+                    joueurs.add(new PlayerItem((long) j.id, j.nom != null ? j.nom : "", 0));
 
                 mainHandler.post(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
+                    if (!isFinishing() && !isDestroyed())
                         afficherJoueurs(joueurs);
-                    }
                 });
             } catch (Exception e) {
+                Log.e(TAG, "Erreur chargement joueurs", e);
                 mainHandler.post(() -> {
-                    if (!isFinishing() && !isDestroyed()) {
+                    if (!isFinishing() && !isDestroyed())
                         afficherJoueurs(new ArrayList<>());
-                    }
                 });
             }
         });
     }
 
     private void afficherJoueurs(List<PlayerItem> joueurs) {
-        // Message si aucun joueur
-        TextView vide = findViewById(R.id.tv_aucun_joueur);
-        if (vide != null) {
-            vide.setVisibility(joueurs.isEmpty() ? View.VISIBLE : View.GONE);
+        try {
+            TextView vide = findViewById(R.id.tv_aucun_joueur);
+            if (vide != null)
+                vide.setVisibility(joueurs.isEmpty() ? View.VISIBLE : View.GONE);
+            adapter.updatePlayerList(joueurs);
+            Log.d(TAG, "Affichage de " + joueurs.size() + " joueurs.");
+        } catch (Exception e) {
+            Log.e(TAG, "Erreur affichage joueurs", e);
         }
-        adapter.updatePlayerList(joueurs);
     }
 
     private void handlePlayerItemClick(PlayerItem playerItem, String type) {
         if ("Suppr".equals(type)) {
             executor.execute(() -> {
-                db.dartScorerDao().deleteJoueurById(playerItem.getId());
+                try {
+                    DartScorerDatabase.getDatabase(getApplicationContext())
+                            .dartScorerDao().deleteJoueurById(playerItem.getId());
+                } catch (Exception e) { Log.e(TAG, "Erreur suppression", e); }
                 mainHandler.post(() -> {
-                    startActivity(new Intent(getApplicationContext(), PlayersActivity.class)
-                            .putExtra("MusicServiceId", "uniqueMusicServiceId"));
-                    finish();
+                    if (!isFinishing() && !isDestroyed()) {
+                        startActivity(new Intent(getApplicationContext(), PlayersActivity.class)
+                                .putExtra("MusicServiceId", "uniqueMusicServiceId"));
+                        finish();
+                    }
                 });
             });
         } else if ("Modif".equals(type)) {
             startActivity(new Intent(getApplicationContext(), ModifyPlayerActivity.class)
-                    .putExtra("playerId", playerItem.getId())
-                    .putExtra("playerName", playerItem.getName())
+                    .putExtra("playerId",    playerItem.getId())
+                    .putExtra("playerName",  playerItem.getName())
                     .putExtra("MusicServiceId", "uniqueMusicServiceId"));
             finish();
         }
@@ -153,7 +170,8 @@ public class PlayersActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        executor.shutdown();
-        if (isMusicBound) { unbindService(musicConnection); isMusicBound = false; }
+        try { executor.shutdown(); } catch (Exception ignored) {}
+        try { if (isMusicBound) { unbindService(musicConnection); isMusicBound = false; } }
+        catch (Exception ignored) {}
     }
 }

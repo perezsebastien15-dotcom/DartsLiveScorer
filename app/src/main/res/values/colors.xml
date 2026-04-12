@@ -23,7 +23,7 @@
 
     <!-- Couleurs UI boutons de jeu -->
     <color name="button_text_default">#FFFFFFFF</color>
-    <color name="button_text_disabled">#FF000000</color>
+    <color name="button_text_disabled">#FF555555</color>
     <color name="button_text_active">#FFFA00F6</color>
     <color name="button_text_selected">#FFFFFF00</color>
     <color name="button_bg_default">#FF000000</color>

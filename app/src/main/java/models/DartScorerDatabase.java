@@ -3,7 +3,6 @@ package models;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import androidx.room.Database;
 import androidx.room.Room;
@@ -15,47 +14,56 @@ import java.util.concurrent.Executors;
 import models.commonModels.Joueur;
 import models.commonModels.Lance;
 import models.commonModels.Partie;
+import models.migrations.Migration_1_2;
+import models.migrations.Migration_2_3;
+import models.migrations.Migration_3_4;
 
-/**
- * Base de données Room — version 1 sur un fichier neuf "darts_v5.db".
- * On repart d'une base propre sans migration pour éviter tout écart de schéma.
- */
-@Database(entities = {Joueur.class, Partie.class, Lance.class}, version = 1, exportSchema = false)
+@Database(entities = {Joueur.class, Partie.class, Lance.class}, version = 4, exportSchema = false)
 public abstract class DartScorerDatabase extends RoomDatabase {
-
-    private static final String TAG     = "DartScorerDB";
-    private static final String DB_NAME = "darts_v5.db"; // Nouveau nom = nouvelle base propre
 
     private static volatile DartScorerDatabase INSTANCE;
 
+    /** Executor partagé pour toutes les opérations Room hors thread principal. */
     public static final ExecutorService DB_EXECUTOR = Executors.newFixedThreadPool(4);
 
     public abstract DartScorerDao dartScorerDao();
 
+    /**
+     * Retourne l'instance singleton de la base, en la construisant si nécessaire.
+     * L'instance est créée de manière thread-safe.
+     * IMPORTANT : ne jamais appeler dartScorerDao() directement sur le thread
+     * principal — toujours utiliser DB_EXECUTOR ou un executor dédié.
+     */
     public static DartScorerDatabase getDatabase(final Context context) {
         if (INSTANCE == null) {
             synchronized (DartScorerDatabase.class) {
                 if (INSTANCE == null) {
-                    Log.d(TAG, "Création base " + DB_NAME);
                     INSTANCE = Room.databaseBuilder(
                                     context.getApplicationContext(),
                                     DartScorerDatabase.class,
-                                    DB_NAME)
+                                    "dart_scorer_database")
+                            .addMigrations(
+                                    new Migration_1_2(),
+                                    new Migration_2_3(),
+                                    new Migration_3_4()
+                            )
                             .build();
-                    Log.d(TAG, "Base prête.");
                 }
             }
         }
         return INSTANCE;
     }
 
+    /**
+     * Initialise la DB en background (ouvre la connexion + applique les migrations)
+     * puis appelle le callback sur le thread principal une fois prêt.
+     * À appeler depuis onCreate() des activités qui ont besoin de la DB.
+     */
     public static void initAsync(Context context, Runnable onReady) {
         DB_EXECUTOR.execute(() -> {
-            try {
-                getDatabase(context).dartScorerDao().getAllJoueurs();
-            } catch (Exception e) {
-                Log.e(TAG, "Erreur init", e);
-            }
+            // Forcer l'ouverture réelle de la DB (et donc les migrations) en background
+            DartScorerDatabase db = getDatabase(context);
+            db.dartScorerDao().getAllJoueurs(); // warm-up : ouvre la connexion
             new Handler(Looper.getMainLooper()).post(onReady);
         });
     }
