@@ -5,7 +5,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Vibrator;
 import android.widget.Button;
 import android.widget.GridView;
@@ -27,25 +29,28 @@ import com.example.dartslivescorer.gamesActivities.UnderHatActivity;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import models.DartScorerDatabase;
-import models.asyncTasks.GetJoueursAsyncTask;
 import models.commonModels.GameItem;
+import models.commonModels.Joueur;
 import models.commonModels.MusicService;
 import models.gamesModels.PlayerItem;
 
-public class SelectPlayersActivity extends AppCompatActivity implements GetJoueursAsyncTask.OnJoueursLoadedListener {
+public class SelectPlayersActivity extends AppCompatActivity {
 
-    private List<PlayerItem> allPlayers;
-    private List<PlayerItem> selectedPlayers;
-    private List<PlayerItem> displayedPlayers;
-    private DartScorerDatabase db;
-    private GridView gridView;
+    private List<PlayerItem>  selectedPlayers  = new ArrayList<>();
+    private List<PlayerItem>  displayedPlayers = new ArrayList<>();
+    private GameItem          selectedGameItem;
+    private GridView          gridView;
     private PlayerItemAdapter playerAdapter;
-    private WindowInsetsControllerCompat windowInsetsController;
-    private Vibrator vibrator;
-    private MusicService musicService;
-    private boolean isMusicBound = false;
+    private Vibrator          vibrator;
+    private MusicService      musicService;
+    private boolean           isMusicBound = false;
+
+    private final ExecutorService executor    = Executors.newSingleThreadExecutor();
+    private final Handler         mainHandler = new Handler(Looper.getMainLooper());
 
     private final ServiceConnection musicConnection = new ServiceConnection() {
         @Override public void onServiceConnected(ComponentName name, IBinder service) {
@@ -66,15 +71,19 @@ public class SelectPlayersActivity extends AppCompatActivity implements GetJoueu
             bindService(new Intent(this, MusicService.class), musicConnection, Context.BIND_AUTO_CREATE);
 
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-        windowInsetsController = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
-        windowInsetsController.hide(WindowInsetsCompat.Type.systemBars());
+        WindowInsetsControllerCompat wic = WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView());
+        wic.hide(WindowInsetsCompat.Type.systemBars());
 
-        GameItem selectedGameItem = getIntent().getParcelableExtra("selectedGame");
-        // DB init en background (migrations comprises)
-        DartScorerDatabase.initAsync(this, () -> {
-            db = DartScorerDatabase.getDatabase(this);
-            new GetJoueursAsyncTask(this, db).execute();
+        selectedGameItem = getIntent().getParcelableExtra("selectedGame");
+
+        playerAdapter = new PlayerItemAdapter(this, displayedPlayers, null, playerItem -> {
+            vibrate();
+            togglePlayerSelection(playerItem);
+            playerAdapter.updateSelectedPlayers(selectedPlayers);
         });
+
+        gridView = findViewById(R.id.player_grid_view);
+        gridView.setAdapter(playerAdapter);
 
         Button retour = findViewById(R.id.jeuretour);
         retour.setOnClickListener(v -> {
@@ -88,82 +97,67 @@ public class SelectPlayersActivity extends AppCompatActivity implements GetJoueu
         lancer.setOnClickListener(v -> {
             vibrate();
             if (isMusicBound) { unbindService(musicConnection); isMusicBound = false; }
-            lancerJeu(selectedGameItem);
+            lancerJeu();
         });
 
-        gridView = findViewById(R.id.player_grid_view);
-        selectedPlayers  = new ArrayList<>();
-        displayedPlayers = new ArrayList<>();
-
-        playerAdapter = new PlayerItemAdapter(this, displayedPlayers, null, playerItem -> {
-            vibrate();
-            togglePlayerSelection(playerItem);
-            updateGridView();
-        });
-
-        gridView.setAdapter(playerAdapter);
+        chargerJoueurs();
     }
 
-    private void lancerJeu(GameItem selectedGameItem) {
+    private void chargerJoueurs() {
+        executor.execute(() -> {
+            try {
+                List<PlayerItem> joueurs = new ArrayList<>();
+                for (Joueur j : DartScorerDatabase.getDatabase(getApplicationContext())
+                        .dartScorerDao().getAllJoueurs()) {
+                    joueurs.add(new PlayerItem((long) j.id, j.nom != null ? j.nom : "", 0));
+                }
+                mainHandler.post(() -> {
+                    if (!isFinishing() && !isDestroyed()) {
+                        displayedPlayers.clear();
+                        displayedPlayers.addAll(joueurs);
+                        playerAdapter.notifyDataSetChanged();
+                    }
+                });
+            } catch (Exception e) { /* liste vide */ }
+        });
+    }
+
+    private void lancerJeu() {
+        if (selectedGameItem == null) return;
         eGames type = selectedGameItem.getType();
 
         if (type == eGames.Standard301 || type == eGames.Standard501 || type == eGames.Standard701) {
-            if (selectedPlayers.size() > 0)
-                startGame(StandardGameActivity.class, selectedGameItem);
-            else
-                Toast.makeText(this, "Sélectionnez au moins un joueur", Toast.LENGTH_SHORT).show();
+            if (!selectedPlayers.isEmpty()) startGame(StandardGameActivity.class);
+            else Toast.makeText(this, "Sélectionnez au moins un joueur", Toast.LENGTH_SHORT).show();
 
         } else if (type == eGames.OriginalCricket || type == eGames.HiddenCricket || type == eGames.RandomCricket) {
-            if (selectedPlayers.size() > 1)
-                startGame(CricketGameActivity.class, selectedGameItem);
-            else
-                Toast.makeText(this, "Sélectionnez au moins deux joueurs", Toast.LENGTH_SHORT).show();
+            if (selectedPlayers.size() > 1) startGame(CricketGameActivity.class);
+            else Toast.makeText(this, "Sélectionnez au moins deux joueurs", Toast.LENGTH_SHORT).show();
 
         } else if (type == eGames.UnderTheHat) {
-            if (selectedPlayers.size() > 1 && selectedPlayers.size() < 10)
-                startGame(UnderHatActivity.class, selectedGameItem);
-            else if (selectedPlayers.size() < 2)
-                Toast.makeText(this, "Sélectionnez au moins deux joueurs", Toast.LENGTH_SHORT).show();
-            else
-                Toast.makeText(this, "Sélectionnez moins de dix joueurs", Toast.LENGTH_SHORT).show();
+            if (selectedPlayers.size() > 1 && selectedPlayers.size() < 10) startGame(UnderHatActivity.class);
+            else if (selectedPlayers.size() < 2) Toast.makeText(this, "Sélectionnez au moins deux joueurs", Toast.LENGTH_SHORT).show();
+            else Toast.makeText(this, "Sélectionnez moins de dix joueurs", Toast.LENGTH_SHORT).show();
 
         } else if (type == eGames.ShootOut) {
-            if (selectedPlayers.size() > 1)
-                startGame(ShootOutActivity.class, selectedGameItem);
-            else
-                Toast.makeText(this, "Sélectionnez au moins deux joueurs", Toast.LENGTH_SHORT).show();
+            if (selectedPlayers.size() > 1) startGame(ShootOutActivity.class);
+            else Toast.makeText(this, "Sélectionnez au moins deux joueurs", Toast.LENGTH_SHORT).show();
 
         } else if (type == eGames.MasterMind) {
-            if (selectedPlayers.size() == 1)
-                startGame(MasterMindActivity.class, selectedGameItem);
-            else
-                Toast.makeText(this, "Sélectionnez un seul joueur", Toast.LENGTH_SHORT).show();
+            if (!selectedPlayers.isEmpty()) startGame(MasterMindActivity.class);
+            else Toast.makeText(this, "Sélectionnez au moins un joueur", Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void startGame(Class<?> activityClass, GameItem selectedGameItem) {
+    private void startGame(Class<?> activityClass) {
         startActivity(new Intent(this, activityClass)
-                .putExtra("selectedGame", selectedGameItem)
+                .putExtra("selectedGame",    selectedGameItem)
                 .putExtra("selectedPlayers", new ArrayList<>(selectedPlayers)));
     }
 
     private void togglePlayerSelection(PlayerItem playerItem) {
         if (selectedPlayers.contains(playerItem)) selectedPlayers.remove(playerItem);
         else selectedPlayers.add(playerItem);
-    }
-
-    private void updateGridView() {
-        if (playerAdapter != null && allPlayers != null) {
-            playerAdapter.updateSelectedPlayers(selectedPlayers);
-            playerAdapter.notifyDataSetChanged();
-        }
-    }
-
-    @Override
-    public void onJoueursLoaded(List<PlayerItem> joueurs) {
-        allPlayers = joueurs;
-        displayedPlayers.addAll(allPlayers);
-        playerAdapter.notifyDataSetChanged();
     }
 
     private void vibrate() {
@@ -173,6 +167,8 @@ public class SelectPlayersActivity extends AppCompatActivity implements GetJoueu
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        executor.shutdown();
         if (vibrator != null) vibrator.cancel();
+        if (isMusicBound) { unbindService(musicConnection); isMusicBound = false; }
     }
 }

@@ -7,31 +7,39 @@
     android:background="@drawable/metal"
     tools:context=".gamesActivities.MasterMindActivity">
 
-    <!-- ══ CLAVIER — ancré en bas ══ -->
-    <GridLayout
-        android:id="@+id/gridLayout"
+    <!-- ══ CLAVIER — même style que StandardGameActivity ══ -->
+    <LinearLayout
+        android:id="@+id/bottomLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:columnCount="9"
-        android:rowCount="3"/>
+        android:orientation="vertical">
 
-    <!-- ══ TOUT LE RESTE au-dessus du clavier ══ -->
+        <GridLayout
+            android:id="@+id/gridLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:columnCount="9"
+            android:rowCount="3"/>
+    </LinearLayout>
+
+    <!-- ══ CONTENU au-dessus du clavier ══ -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_above="@id/gridLayout"
+        android:layout_above="@id/bottomLayout"
         android:orientation="vertical">
 
         <!-- BANDEAU TITRE -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="120px"
             android:orientation="horizontal"
             android:background="@drawable/customborderbuttons"
-            android:layout_marginHorizontal="8dp"
-            android:layout_marginTop="6dp"
-            android:gravity="center_vertical">
+            android:layout_marginEnd="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp">
 
             <TextView
                 android:layout_width="0dp"
@@ -39,12 +47,12 @@
                 android:layout_weight="1"
                 android:text="Master Mind"
                 android:textColor="#08FF00"
-                android:textSize="20sp"
+                android:textSize="22sp"
                 android:textStyle="bold"
                 android:fontFamily="@font/neon"
                 android:gravity="center"
                 android:shadowColor="#08FF00"
-                android:shadowDx="3" android:shadowDy="3" android:shadowRadius="8"/>
+                android:shadowDx="4" android:shadowDy="4" android:shadowRadius="10"/>
 
             <TextView
                 android:id="@+id/nb_tours"
@@ -53,12 +61,12 @@
                 android:layout_weight="1"
                 android:text="Tour 1 / 20"
                 android:textColor="#FFF200"
-                android:textSize="17sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
                 android:fontFamily="@font/led"
                 android:gravity="center"
                 android:shadowColor="#FF8C00"
-                android:shadowDx="3" android:shadowDy="3" android:shadowRadius="8"/>
+                android:shadowDx="4" android:shadowDy="4" android:shadowRadius="10"/>
 
             <TextView
                 android:id="@+id/tv_joueur_courant"
@@ -67,21 +75,21 @@
                 android:layout_weight="1"
                 android:text="Joueur"
                 android:textColor="#00FFEA"
-                android:textSize="17sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
                 android:fontFamily="@font/neon"
                 android:gravity="center"
                 android:shadowColor="#00FFEA"
-                android:shadowDx="3" android:shadowDy="3" android:shadowRadius="8"/>
+                android:shadowDx="4" android:shadowDy="4" android:shadowRadius="10"/>
         </LinearLayout>
 
         <!-- COMBINAISON SECRÈTE -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="90dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginHorizontal="8dp"
+            android:layout_marginHorizontal="10dp"
             android:layout_marginTop="4dp"
             android:background="#22FFFFFF"
             android:padding="6dp">
@@ -94,73 +102,73 @@
                 android:textSize="14sp"
                 android:fontFamily="@font/bines"
                 android:paddingStart="8dp"
-                android:paddingEnd="8dp"/>
+                android:paddingEnd="12dp"/>
 
             <!-- Case 1 -->
             <LinearLayout android:layout_width="0dp" android:layout_height="match_parent"
                 android:layout_weight="1" android:gravity="center" android:orientation="vertical">
                 <TextView android:id="@+id/combi_un"
-                    android:layout_width="54dp" android:layout_height="54dp"
-                    android:text="?" android:textSize="22sp" android:textStyle="bold"
+                    android:layout_width="58dp" android:layout_height="58dp"
+                    android:text="?" android:textSize="24sp" android:textStyle="bold"
                     android:gravity="center" android:fontFamily="@font/led"
                     android:background="@drawable/custombordermm"
                     android:textColor="#888888"/>
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="①" android:textColor="#666666" android:textSize="12sp"/>
+                    android:text="①" android:textColor="#555555" android:textSize="11sp"/>
             </LinearLayout>
 
             <!-- Case 2 -->
             <LinearLayout android:layout_width="0dp" android:layout_height="match_parent"
                 android:layout_weight="1" android:gravity="center" android:orientation="vertical">
                 <TextView android:id="@+id/combi_deux"
-                    android:layout_width="54dp" android:layout_height="54dp"
-                    android:text="?" android:textSize="22sp" android:textStyle="bold"
+                    android:layout_width="58dp" android:layout_height="58dp"
+                    android:text="?" android:textSize="24sp" android:textStyle="bold"
                     android:gravity="center" android:fontFamily="@font/led"
                     android:background="@drawable/custombordermm"
                     android:textColor="#888888"/>
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="②" android:textColor="#666666" android:textSize="12sp"/>
+                    android:text="②" android:textColor="#555555" android:textSize="11sp"/>
             </LinearLayout>
 
             <!-- Case 3 -->
             <LinearLayout android:layout_width="0dp" android:layout_height="match_parent"
                 android:layout_weight="1" android:gravity="center" android:orientation="vertical">
                 <TextView android:id="@+id/combi_trois"
-                    android:layout_width="54dp" android:layout_height="54dp"
-                    android:text="?" android:textSize="22sp" android:textStyle="bold"
+                    android:layout_width="58dp" android:layout_height="58dp"
+                    android:text="?" android:textSize="24sp" android:textStyle="bold"
                     android:gravity="center" android:fontFamily="@font/led"
                     android:background="@drawable/custombordermm"
                     android:textColor="#888888"/>
                 <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                    android:text="③" android:textColor="#666666" android:textSize="12sp"/>
+                    android:text="③" android:textColor="#555555" android:textSize="11sp"/>
             </LinearLayout>
         </LinearLayout>
 
         <!-- FLÉCHETTES DU TOUR EN COURS -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="90dp"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:layout_marginHorizontal="8dp"
+            android:layout_marginHorizontal="10dp"
             android:layout_marginTop="4dp"
             android:background="#1AFFFFFF"
             android:padding="6dp">
 
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
                 android:text="Tirs :" android:textColor="#AAAAAA" android:textSize="14sp"
-                android:fontFamily="@font/bines" android:paddingStart="8dp" android:paddingEnd="8dp"/>
+                android:fontFamily="@font/bines" android:paddingStart="8dp" android:paddingEnd="12dp"/>
 
             <!-- Fléchette 1 -->
             <LinearLayout android:layout_width="0dp" android:layout_height="match_parent"
                 android:layout_weight="1" android:gravity="center" android:orientation="vertical">
                 <TextView android:id="@+id/tir_un"
-                    android:layout_width="54dp" android:layout_height="54dp"
-                    android:text="·" android:textSize="24sp" android:textStyle="bold"
+                    android:layout_width="58dp" android:layout_height="58dp"
+                    android:text="·" android:textSize="26sp" android:textStyle="bold"
                     android:gravity="center" android:fontFamily="@font/led"
                     android:textColor="#444444"/>
                 <ImageView android:id="@+id/ind_un"
-                    android:layout_width="24dp" android:layout_height="24dp"
+                    android:layout_width="20dp" android:layout_height="20dp"
                     android:visibility="invisible"/>
             </LinearLayout>
 
@@ -168,12 +176,12 @@
             <LinearLayout android:layout_width="0dp" android:layout_height="match_parent"
                 android:layout_weight="1" android:gravity="center" android:orientation="vertical">
                 <TextView android:id="@+id/tir_deux"
-                    android:layout_width="54dp" android:layout_height="54dp"
-                    android:text="·" android:textSize="24sp" android:textStyle="bold"
+                    android:layout_width="58dp" android:layout_height="58dp"
+                    android:text="·" android:textSize="26sp" android:textStyle="bold"
                     android:gravity="center" android:fontFamily="@font/led"
                     android:textColor="#444444"/>
                 <ImageView android:id="@+id/ind_deux"
-                    android:layout_width="24dp" android:layout_height="24dp"
+                    android:layout_width="20dp" android:layout_height="20dp"
                     android:visibility="invisible"/>
             </LinearLayout>
 
@@ -181,21 +189,21 @@
             <LinearLayout android:layout_width="0dp" android:layout_height="match_parent"
                 android:layout_weight="1" android:gravity="center" android:orientation="vertical">
                 <TextView android:id="@+id/tir_trois"
-                    android:layout_width="54dp" android:layout_height="54dp"
-                    android:text="·" android:textSize="24sp" android:textStyle="bold"
+                    android:layout_width="58dp" android:layout_height="58dp"
+                    android:text="·" android:textSize="26sp" android:textStyle="bold"
                     android:gravity="center" android:fontFamily="@font/led"
                     android:textColor="#444444"/>
                 <ImageView android:id="@+id/ind_trois"
-                    android:layout_width="24dp" android:layout_height="24dp"
+                    android:layout_width="20dp" android:layout_height="20dp"
                     android:visibility="invisible"/>
             </LinearLayout>
 
-            <!-- Légende -->
+            <!-- Légende indicateurs -->
             <LinearLayout android:layout_width="wrap_content" android:layout_height="match_parent"
                 android:orientation="vertical" android:gravity="center" android:paddingEnd="8dp">
                 <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content"
                     android:orientation="horizontal" android:gravity="center_vertical"
-                    android:layout_marginBottom="4dp">
+                    android:layout_marginBottom="6dp">
                     <View android:layout_width="14dp" android:layout_height="14dp"
                         android:background="#FF00E676" android:layout_marginEnd="4dp"/>
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
@@ -211,43 +219,16 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- HISTORIQUE -->
-        <LinearLayout
+        <!-- HISTORIQUE (sans bandeau en-tête) -->
+        <ListView
+            android:id="@+id/listHistorique"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginHorizontal="8dp"
-            android:layout_marginTop="4dp">
-
-            <!-- En-tête -->
-            <LinearLayout android:layout_width="match_parent" android:layout_height="26dp"
-                android:orientation="horizontal" android:background="#33FFFFFF">
-                <TextView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1.2"
-                    android:text="Tour" android:textColor="#00FFEA" android:textSize="11sp"
-                    android:fontFamily="@font/bines" android:gravity="center"/>
-                <TextView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1.5"
-                    android:text="Joueur" android:textColor="#00FFEA" android:textSize="11sp"
-                    android:fontFamily="@font/bines" android:gravity="center"/>
-                <TextView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-                    android:text="F①" android:textColor="#FFF200" android:textSize="11sp"
-                    android:fontFamily="@font/bines" android:gravity="center"/>
-                <TextView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-                    android:text="F②" android:textColor="#FFF200" android:textSize="11sp"
-                    android:fontFamily="@font/bines" android:gravity="center"/>
-                <TextView android:layout_width="0dp" android:layout_height="match_parent" android:layout_weight="1"
-                    android:text="F③" android:textColor="#FFF200" android:textSize="11sp"
-                    android:fontFamily="@font/bines" android:gravity="center"/>
-            </LinearLayout>
-
-            <ListView
-                android:id="@+id/listHistorique"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:divider="#22FFFFFF"
-                android:dividerHeight="1dp"/>
-        </LinearLayout>
+            android:layout_marginHorizontal="10dp"
+            android:layout_marginTop="4dp"
+            android:divider="#22FFFFFF"
+            android:dividerHeight="1dp"/>
 
     </LinearLayout>
 
