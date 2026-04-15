@@ -105,6 +105,7 @@ public class MasterMindActivity extends AppCompatActivity {
             btn.setId(scoreButton.getId());
             btn.setText(scoreButton.getLabel());
             btn.setTag(scoreButton.getType());
+            btn.setTextColor(0xFFFFFFFF);
             btn.getBackground().setTint(getResources().getColor(R.color.button_bg_default, getTheme()));
             btn.getBackground().setAlpha(150);
 
